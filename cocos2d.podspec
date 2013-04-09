@@ -11,8 +11,6 @@ Pod::Spec.new do |s|
   s.source_files = 'cocos2d/**/*.{h,m,c}', 'CocosDenshion/*.{h,m}',
     FileList['external/libpng/*.{h,c}'].exclude(/pngtest.c/, /example.c/), 'external/kazmath/src/**/*.{c,h}', 'external/kazmath/include/**/*.{c,h}', 'external/extensions/*.{m,h}', 'external/extensions/**/*.{m,h}'
 
-  s.source_files = 'IXBasis/**/*.{h,m,mm}', 'IXBasis/*.{h,m,mm}', 'libs/**/*.{h,m,mm}'
-
   s.xcconfig = {
     'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/cocos2d/external/kazmath/include"'
   }
