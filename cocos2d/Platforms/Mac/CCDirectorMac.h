@@ -54,20 +54,20 @@ enum  {
  */
 @interface CCDirectorMac : CCDirector
 {
-	BOOL			_isFullScreen;
-	int				_resizeMode;
-	CGPoint			_winOffset;
-    CGSize			_originalWinSize;
+	BOOL			isFullScreen_;
+	int				resizeMode_;
+	CGPoint			winOffset_;
+    CGSize			originalWinSize_;
 
-	NSWindow		*_fullScreenWindow;
+	NSWindow		*fullScreenWindow_;
 
 	// Event Dispatcher
-	CCEventDispatcher	*_eventDispatcher;
+	CCEventDispatcher	*eventDispatcher_;
 
 	// cache
-	NSWindow		*_windowGLView;
-    NSView          *_superViewGLView;
-    NSRect          _originalWinRect; // Original size and position
+	NSWindow		*windowGLView_;
+    NSView          *superViewGLView_;
+    NSRect          originalWinRect_; // Original size and position
 }
 
 // whether or not the view is in fullscreen mode

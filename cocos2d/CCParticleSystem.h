@@ -169,25 +169,25 @@ typedef void (*CC_UPDATE_PARTICLE_IMP)(id, SEL, tCCParticle*, CGPoint);
 @interface CCParticleSystem : CCNode <CCTextureProtocol>
 {
 	// is the particle system active ?
-	BOOL _active;
+	BOOL active;
 	// duration in seconds of the system. -1 is infinity
-	float _duration;
+	float duration;
 	// time elapsed since the start of the system (in seconds)
-	float _elapsed;
+	float elapsed;
 
 	// position is from "superclass" CocosNode
-	CGPoint _sourcePosition;
+	CGPoint sourcePosition;
 	// Position variance
-	CGPoint _posVar;
+	CGPoint posVar;
 
 	// The angle (direction) of the particles measured in degrees
-	float _angle;
+	float angle;
 	// Angle variance measured in degrees;
-	float _angleVar;
+	float angleVar;
 
 	// Different modes
 
-	NSInteger _emitterMode;
+	NSInteger emitterMode_;
 	union {
 		// Mode A:Gravity + Tangential Accel + Radial Accel
 		struct {
@@ -226,81 +226,81 @@ typedef void (*CC_UPDATE_PARTICLE_IMP)(id, SEL, tCCParticle*, CGPoint);
 			// Variance in degrees for rotatePerSecond
 			float rotatePerSecondVar;
 		} B;
-	} _mode;
+	} mode;
 
 	// start ize of the particles
-	float _startSize;
+	float startSize;
 	// start Size variance
-	float _startSizeVar;
+	float startSizeVar;
 	// End size of the particle
-	float _endSize;
+	float endSize;
 	// end size of variance
-	float _endSizeVar;
+	float endSizeVar;
 
 	// How many seconds will the particle live
-	float _life;
+	float life;
 	// Life variance
-	float _lifeVar;
+	float lifeVar;
 
 	// Start color of the particles
-	ccColor4F _startColor;
+	ccColor4F startColor;
 	// Start color variance
-	ccColor4F _startColorVar;
+	ccColor4F startColorVar;
 	// End color of the particles
-	ccColor4F _endColor;
+	ccColor4F endColor;
 	// End color variance
-	ccColor4F _endColorVar;
+	ccColor4F endColorVar;
 
 	// start angle of the particles
-	float _startSpin;
+	float startSpin;
 	// start angle variance
-	float _startSpinVar;
+	float startSpinVar;
 	// End angle of the particle
-	float _endSpin;
+	float endSpin;
 	// end angle ariance
-	float _endSpinVar;
+	float endSpinVar;
 
 	// Array of particles
-	tCCParticle *_particles;
+	tCCParticle *particles;
 	// Maximum particles
-	NSUInteger _totalParticles;
+	NSUInteger totalParticles;
 	// Count of active particles
-	NSUInteger _particleCount;
+	NSUInteger particleCount;
     // Number of allocated particles
-    NSUInteger _allocatedParticles;
+    NSUInteger allocatedParticles;
 
 	// How many particles can be emitted per second
-	float _emissionRate;
-	float _emitCounter;
+	float emissionRate;
+	float emitCounter;
 
 	// Texture of the particles
-	CCTexture2D *_texture;
+	CCTexture2D *texture_;
 	// blend function
-	ccBlendFunc	_blendFunc;
+	ccBlendFunc	blendFunc_;
 	// Texture alpha behavior
-	BOOL _opacityModifyRGB;
+	BOOL opacityModifyRGB_;
 
 	// movment type: free or grouped
-	tCCPositionType	_positionType;
+	tCCPositionType	positionType_;
 
 	// Whether or not the node will be auto-removed when there are not particles
-	BOOL	_autoRemoveOnFinish;
+	BOOL	autoRemoveOnFinish_;
 
 	//  particle idx
-	NSUInteger _particleIdx;
+	NSUInteger particleIdx;
 
 	// Optimization
-	CC_UPDATE_PARTICLE_IMP	_updateParticleImp;
-	SEL						_updateParticleSel;
+	CC_UPDATE_PARTICLE_IMP	updateParticleImp;
+	SEL						updateParticleSel;
 
 	// for batching. If nil, then it won't be batched
-	CCParticleBatchNode *_batchNode;
+	CCParticleBatchNode *batchNode_;
 
 	// index of system in batch node array
-	NSUInteger _atlasIndex;
+	NSUInteger atlasIndex_;
 
 	//YES if scaled or rotated
-	BOOL _transformSystemDirty;
+	BOOL transformSystemDirty_;
 }
 
 /** Is the emitter active */
@@ -444,6 +444,7 @@ typedef void (*CC_UPDATE_PARTICLE_IMP)(id, SEL, tCCParticle*, CGPoint);
 
 //! Initializes a system with a fixed number of particles
 -(id) initWithTotalParticles:(NSUInteger) numberOfParticles;
+-(BOOL) addParticle;
 //! stop emitting particles. Running particles will continue to run until they die
 -(void) stopSystem;
 //! Kill all living particles.

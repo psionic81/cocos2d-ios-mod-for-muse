@@ -63,26 +63,26 @@
  */
 @interface CCTMXLayer : CCSpriteBatchNode
 {
-	CCTMXTilesetInfo	*_tileset;
-	NSString			*_layerName;
-	CGSize				_layerSize;
-	CGSize				_mapTileSize;
-	uint32_t			*_tiles;			// GID are 32 bit
-	NSUInteger			_layerOrientation;
-	NSMutableArray		*_properties;
+	CCTMXTilesetInfo	*tileset_;
+	NSString			*layerName_;
+	CGSize				layerSize_;
+	CGSize				mapTileSize_;
+	uint32_t			*tiles_;			// GID are 32 bit
+	NSUInteger			layerOrientation_;
+	NSMutableArray		*properties_;
 
-	unsigned char		_opacity; // TMX Layer supports opacity
+	unsigned char		opacity_; // TMX Layer supports opacity
 
-	NSUInteger			_minGID;
-	NSUInteger			_maxGID;
+	NSUInteger			minGID_;
+	NSUInteger			maxGID_;
 
 	// Only used when vertexZ is used
-	NSInteger			_vertexZvalue;
-	BOOL				_useAutomaticVertexZ;
+	NSInteger			vertexZvalue_;
+	BOOL				useAutomaticVertexZ_;
 
 	// used for optimization
-	CCSprite		*_reusedTile;
-	ccCArray		*_atlasIndexArray;
+	CCSprite		*reusedTile_;
+	ccCArray		*atlasIndexArray_;
 }
 /** name of the layer */
 @property (nonatomic,readwrite,retain) NSString *layerName;

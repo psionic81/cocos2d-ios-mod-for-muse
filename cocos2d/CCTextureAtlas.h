@@ -42,17 +42,17 @@
  */
 @interface CCTextureAtlas : NSObject
 {
-	NSUInteger			_totalQuads;
-	NSUInteger			_capacity;
-	ccV3F_C4B_T2F_Quad	*_quads;	// quads to be rendered
-	GLushort			*_indices;
-	CCTexture2D			*_texture;
+	NSUInteger			totalQuads_;
+	NSUInteger			capacity_;
+	ccV3F_C4B_T2F_Quad	*quads_;	// quads to be rendered
+	GLushort			*indices_;
+	CCTexture2D			*texture_;
 	
-	GLuint				_buffersVBO[2]; //0: vertex  1: indices
-	BOOL				_dirty;			//indicates whether or not the array buffer of the VBO needs to be updated
+	GLuint				buffersVBO_[2]; //0: vertex  1: indices
+	BOOL				dirty_;			//indicates whether or not the array buffer of the VBO needs to be updated
 
 #if CC_TEXTURE_ATLAS_USE_VAO
-	GLuint				_VAOname;
+	GLuint				VAOname_;
 #endif
 }
 

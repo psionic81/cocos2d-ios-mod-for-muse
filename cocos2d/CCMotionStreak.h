@@ -32,31 +32,32 @@
 /** MotionStreak.
  Creates a trailing path.
  */
-@interface CCMotionStreak : CCNodeRGBA <CCTextureProtocol>
+@interface CCMotionStreak : CCNode <CCTextureProtocol, CCRGBAProtocol>
 {
-    CCTexture2D *_texture;
-    CGPoint _positionR;
-    ccBlendFunc _blendFunc;
-    float _stroke;
-    float _fadeDelta;
-    float _minSeg;
+    CCTexture2D *texture_;
+    CGPoint positionR_;
+    ccColor3B color_;
+    ccBlendFunc blendFunc_;
+    float stroke_;
+    float fadeDelta_;
+    float minSeg_;
 
-    NSUInteger _maxPoints;
-    NSUInteger _nuPoints;
-	NSUInteger _previousNuPoints;
+    NSUInteger maxPoints_;
+    NSUInteger nuPoints_;
+	NSUInteger previousNuPoints_;
 
     /** Pointers */
-    CGPoint *_pointVertexes;
-    float *_pointState;
+    CGPoint *pointVertexes_;
+    float *pointState_;
 
     // Opengl
-    ccVertex2F *_vertices;
-    unsigned char *_colorPointer;
-    ccTex2F *_texCoords;
+    ccVertex2F *vertices_;
+    unsigned char *colorPointer_;
+    ccTex2F *texCoords_;
 
-    BOOL	_fastMode;
+    BOOL	fastMode_;
 	
-	BOOL	_startingPositionInitialized;
+	BOOL	startingPositionInitialized_;
 }
 /** blending function */
 @property (nonatomic, readwrite, assign) ccBlendFunc blendFunc;

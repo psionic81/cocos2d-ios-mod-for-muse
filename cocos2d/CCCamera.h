@@ -53,21 +53,21 @@
 
 @interface CCCamera : NSObject
 {
-    float _eyeX;
-    float _eyeY;
-    float _eyeZ;
+    float eyeX_;
+    float eyeY_;
+    float eyeZ_;
 
-    float _centerX;
-    float _centerY;
-    float _centerZ;
+    float centerX_;
+    float centerY_;
+    float centerZ_;
 
-    float _upX;
-    float _upY;
-    float _upZ;
+    float upX_;
+    float upY_;
+    float upZ_;
 
-	BOOL _dirty;
+	BOOL dirty_;
 
-	kmMat4	_lookupMatrix;
+	kmMat4	lookupMatrix_;
 }
 
 /** whether of not the camera is dirty */

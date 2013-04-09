@@ -82,21 +82,21 @@
 
 @implementation CCDirectorMac
 
-@synthesize isFullScreen = _isFullScreen;
-@synthesize originalWinSize = _originalWinSize;
+@synthesize isFullScreen = isFullScreen_;
+@synthesize originalWinSize = originalWinSize_;
 
 -(id) init
 {
 	if( (self = [super init]) ) {
-		_isFullScreen = NO;
-		_resizeMode = kCCDirectorResize_AutoScale;
+		isFullScreen_ = NO;
+		resizeMode_ = kCCDirectorResize_AutoScale;
 
-        _originalWinSize = CGSizeZero;
-		_fullScreenWindow = nil;
-		_windowGLView = nil;
-		_winOffset = CGPointZero;
+        originalWinSize_ = CGSizeZero;
+		fullScreenWindow_ = nil;
+		windowGLView_ = nil;
+		winOffset_ = CGPointZero;
 
-		_eventDispatcher = [[CCEventDispatcher alloc] init];
+		eventDispatcher_ = [[CCEventDispatcher alloc] init];
 	}
 
 	return self;
@@ -104,11 +104,11 @@
 
 - (void) dealloc
 {
-	[_eventDispatcher release];
-	[__view release];
-    [_superViewGLView release];
-	[_fullScreenWindow release];
-	[_windowGLView release];
+	[eventDispatcher_ release];
+	[view_ release];
+    [superViewGLView_ release];
+	[fullScreenWindow_ release];
+	[windowGLView_ release];
 
 	[super dealloc];
 }
@@ -118,9 +118,9 @@
 //
 - (void) setFullScreen:(BOOL)fullscreen
 {
-//	_isFullScreen = !_isFullScreen;
+//	isFullScreen_ = !isFullScreen_;
 //		
-//	if (_isFullScreen)
+//	if (isFullScreen_)
 //	{
 //		[self.view enterFullScreenMode:[[self.view window] screen] withOptions:nil];
 //	}
@@ -135,28 +135,28 @@
 	// Mac OS X 10.6 and later offer a simplified mechanism to create full-screen contexts
 #if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5
 
-    if (_isFullScreen == fullscreen)
+    if (isFullScreen_ == fullscreen)
 		return;
 
 	CCGLView *openGLview = (CCGLView*) self.view;
     BOOL viewAcceptsTouchEvents = openGLview.acceptsTouchEvents;
 
     if( fullscreen ) {
-        _originalWinRect = [openGLview frame];
+        originalWinRect_ = [openGLview frame];
 
         // Cache normal window and superview of openGLView
-        if(!_windowGLView)
-            _windowGLView = [[openGLview window] retain];
+        if(!windowGLView_)
+            windowGLView_ = [[openGLview window] retain];
 
-        [_superViewGLView release];
-        _superViewGLView = [[openGLview superview] retain];
+        [superViewGLView_ release];
+        superViewGLView_ = [[openGLview superview] retain];
 
 
         // Get screen size
         NSRect displayRect = [[NSScreen mainScreen] frame];
 
         // Create a screen-sized window on the display you want to take over
-        _fullScreenWindow = [[CCWindow alloc] initWithFrame:displayRect fullscreen:YES];
+        fullScreenWindow_ = [[CCWindow alloc] initWithFrame:displayRect fullscreen:YES];
 
         // Remove glView from window
         [openGLview removeFromSuperview];
@@ -165,11 +165,11 @@
         [openGLview setFrame:displayRect];
 
         // Attach glView to fullscreen window
-        [_fullScreenWindow setContentView:openGLview];
+        [fullScreenWindow_ setContentView:openGLview];
 
         // Show the fullscreen window
-        [_fullScreenWindow makeKeyAndOrderFront:self];
-		[_fullScreenWindow makeMainWindow];
+        [fullScreenWindow_ makeKeyAndOrderFront:self];
+		[fullScreenWindow_ makeMainWindow];
 
     } else {
 
@@ -177,24 +177,24 @@
         [openGLview removeFromSuperview];
 
         // Release fullscreen window
-        [_fullScreenWindow release];
-        _fullScreenWindow = nil;
+        [fullScreenWindow_ release];
+        fullScreenWindow_ = nil;
 
         // Attach glView to superview
-        [_superViewGLView addSubview:openGLview];
+        [superViewGLView_ addSubview:openGLview];
 
         // Set new frame
-        [openGLview setFrame:_originalWinRect];
+        [openGLview setFrame:originalWinRect_];
 
         // Show the window
-        [_windowGLView makeKeyAndOrderFront:self];
-		[_windowGLView makeMainWindow];
+        [windowGLView_ makeKeyAndOrderFront:self];
+		[windowGLView_ makeMainWindow];
     }
 	
 	// issue #1189
-	[_windowGLView makeFirstResponder:openGLview];
+	[windowGLView_ makeFirstResponder:openGLview];
 
-    _isFullScreen = fullscreen;
+    isFullScreen_ = fullscreen;
 
     [openGLview retain]; // Retain +1
 
@@ -214,73 +214,67 @@
 
 -(void) setView:(CCGLView *)view
 {
-	if( view != __view) {
+	if( view != view_) {
 
 		[super setView:view];
 
 		// cache the NSWindow and NSOpenGLView created from the NIB
-		if( !_isFullScreen && CGSizeEqualToSize(_originalWinSize, CGSizeZero))
+		if( !isFullScreen_ && CGSizeEqualToSize(originalWinSize_, CGSizeZero))
 		{
-			_originalWinSize = _winSizeInPixels;
+			originalWinSize_ = winSizeInPixels_;
 		}
 	}
 }
 
 -(int) resizeMode
 {
-	return _resizeMode;
+	return resizeMode_;
 }
 
 -(void) setResizeMode:(int)mode
 {
-	if( mode != _resizeMode ) {
+	if( mode != resizeMode_ ) {
 
-		_resizeMode = mode;
+		resizeMode_ = mode;
 
-        [self setProjection:_projection];
+        [self setProjection:projection_];
         [self.view setNeedsDisplay: YES];
 	}
 }
 
--(void) setViewport
-{
-	CGPoint offset = CGPointZero;
-	float widthAspect = _winSizeInPixels.width;
-	float heightAspect = _winSizeInPixels.height;
-
-
-	if( _resizeMode == kCCDirectorResize_AutoScale && ! CGSizeEqualToSize(_originalWinSize, CGSizeZero ) ) {
-		
-		float aspect = _originalWinSize.width / _originalWinSize.height;
-		widthAspect = _winSizeInPixels.width;
-		heightAspect = _winSizeInPixels.width / aspect;
-		
-		if( heightAspect > _winSizeInPixels.height ) {
-			widthAspect = _winSizeInPixels.height * aspect;
-			heightAspect = _winSizeInPixels.height;
-		}
-		
-		_winOffset.x = (_winSizeInPixels.width - widthAspect) / 2;
-		_winOffset.y =  (_winSizeInPixels.height - heightAspect) / 2;
-		
-		offset = _winOffset;
-	}
-
-	glViewport(offset.x, offset.y, widthAspect, heightAspect);
-}
-
 -(void) setProjection:(ccDirectorProjection)projection
 {
-	CGSize size = _winSizeInPixels;
-    if( _resizeMode == kCCDirectorResize_AutoScale && ! CGSizeEqualToSize(_originalWinSize, CGSizeZero ) ) {
-		size = _originalWinSize;
-    }
+	CGSize size = winSizeInPixels_;
 
-	[self setViewport];
+	CGPoint offset = CGPointZero;
+	float widthAspect = size.width;
+	float heightAspect = size.height;
+
+
+	if( resizeMode_ == kCCDirectorResize_AutoScale && ! CGSizeEqualToSize(originalWinSize_, CGSizeZero ) ) {
+
+		size = originalWinSize_;
+
+		float aspect = originalWinSize_.width / originalWinSize_.height;
+		widthAspect = winSizeInPixels_.width;
+		heightAspect = winSizeInPixels_.width / aspect;
+
+		if( heightAspect > winSizeInPixels_.height ) {
+			widthAspect = winSizeInPixels_.height * aspect;
+			heightAspect = winSizeInPixels_.height;
+		}
+
+		winOffset_.x = (winSizeInPixels_.width - widthAspect) / 2;
+		winOffset_.y =  (winSizeInPixels_.height - heightAspect) / 2;
+
+		offset = winOffset_;
+
+	}
 
 	switch (projection) {
 		case kCCDirectorProjection2D:
 
+			glViewport(offset.x, offset.y, widthAspect, heightAspect);
 			kmGLMatrixMode(KM_GL_PROJECTION);
 			kmGLLoadIdentity();
 
@@ -298,6 +292,7 @@
 
 			float zeye = [self getZEye];
 
+			glViewport(offset.x, offset.y, widthAspect, heightAspect);
 			kmGLMatrixMode(KM_GL_PROJECTION);
 			kmGLLoadIdentity();
 
@@ -315,7 +310,7 @@
 			kmGLLoadIdentity();
 			kmVec3 eye, center, up;
 
-			float eyeZ = size.height * zeye / _winSizeInPixels.height;
+			float eyeZ = size.height * zeye / winSizeInPixels_.height;
 
 			kmVec3Fill( &eye, size.width/2, size.height/2, eyeZ );
 			kmVec3Fill( &center, size.width/2, size.height/2, 0 );
@@ -326,8 +321,8 @@
 		}
 
 		case kCCDirectorProjectionCustom:
-			if( [_delegate respondsToSelector:@selector(updateProjection)] )
-				[_delegate updateProjection];
+			if( [delegate_ respondsToSelector:@selector(updateProjection)] )
+				[delegate_ updateProjection];
 			break;
 
 		default:
@@ -335,7 +330,7 @@
 			break;
 	}
 
-	_projection = projection;
+	projection_ = projection;
 
 	ccSetProjectionMatrixDirty();
 }
@@ -345,10 +340,10 @@
 // otherwise it should return the "real" size.
 -(CGSize) winSize
 {
-	if( _resizeMode == kCCDirectorResize_AutoScale )
-		return _originalWinSize;
+	if( resizeMode_ == kCCDirectorResize_AutoScale )
+		return originalWinSize_;
 
-	return _winSizeInPixels;
+	return winSizeInPixels_;
 }
 
 -(CGSize) winSizeInPixels
@@ -360,16 +355,16 @@
 {
 	CGPoint ret;
 
-	if( _resizeMode == kCCDirectorResize_NoScale )
+	if( resizeMode_ == kCCDirectorResize_NoScale )
 		ret = coords;
 
 	else {
 
-		float x_diff = _originalWinSize.width / (_winSizeInPixels.width - _winOffset.x * 2);
-		float y_diff = _originalWinSize.height / (_winSizeInPixels.height - _winOffset.y * 2);
+		float x_diff = originalWinSize_.width / (winSizeInPixels_.width - winOffset_.x * 2);
+		float y_diff = originalWinSize_.height / (winSizeInPixels_.height - winOffset_.y * 2);
 
-		float adjust_x = (_winSizeInPixels.width * x_diff - _originalWinSize.width ) / 2;
-		float adjust_y = (_winSizeInPixels.height * y_diff - _originalWinSize.height ) / 2;
+		float adjust_x = (winSizeInPixels_.width * x_diff - originalWinSize_.width ) / 2;
+		float adjust_y = (winSizeInPixels_.height * y_diff - originalWinSize_.height ) / 2;
 
 		ret = CGPointMake( (x_diff * coords.x) - adjust_x, ( y_diff * coords.y ) - adjust_y );
 	}
@@ -379,15 +374,15 @@
 
 -(void) setEventDispatcher:(CCEventDispatcher *)dispatcher
 {
-	if( dispatcher != _eventDispatcher ) {
-		[_eventDispatcher release];
-		_eventDispatcher = [dispatcher retain];
+	if( dispatcher != eventDispatcher_ ) {
+		[eventDispatcher_ release];
+		eventDispatcher_ = [dispatcher retain];
 	}
 }
 
 -(CCEventDispatcher *) eventDispatcher
 {
-	return _eventDispatcher;
+	return eventDispatcher_;
 }
 @end
 
@@ -401,8 +396,8 @@
 - (CVReturn) getFrameForTime:(const CVTimeStamp*)outputTime
 {
 #if (CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_DISPLAY_LINK_THREAD)
-	if( ! _runningThread )
-		_runningThread = [NSThread currentThread];
+	if( ! runningThread_ )
+		runningThread_ = [NSThread currentThread];
 
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
@@ -414,7 +409,7 @@
 	[pool release];
 		
 #else
-	[self performSelector:@selector(drawScene) onThread:_runningThread withObject:nil waitUntilDone:YES];
+	[self performSelector:@selector(drawScene) onThread:runningThread_ withObject:nil waitUntilDone:YES];
 #endif
 
     return kCVReturnSuccess;
@@ -429,20 +424,18 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 
 - (void) startAnimation
 {
-	[super startAnimation];
-	
-    if(_isAnimating)
+    if(isAnimating_)
         return;
 
 	CCLOG(@"cocos2d: startAnimation");
 #if (CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_OWN_THREAD)
-	_runningThread = [[NSThread alloc] initWithTarget:self selector:@selector(mainLoop) object:nil];
-	[_runningThread start];
+	runningThread_ = [[NSThread alloc] initWithTarget:self selector:@selector(mainLoop) object:nil];
+	[runningThread_ start];
 #elif (CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_MAIN_THREAD)
-    _runningThread = [NSThread mainThread];
+    runningThread_ = [NSThread mainThread];
 #endif
 
-	gettimeofday( &_lastUpdate, NULL);
+	gettimeofday( &lastUpdate_, NULL);
 
 	// Create a display link capable of being used with all active displays
 	CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
@@ -459,12 +452,12 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	// Activate the display link
 	CVDisplayLinkStart(displayLink);
     
-    _isAnimating = YES;
+    isAnimating_ = YES;
 }
 
 - (void) stopAnimation
 {
-    if(!_isAnimating)
+    if(!isAnimating_)
         return;
 
 	CCLOG(@"cocos2d: stopAnimation");
@@ -475,15 +468,15 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 		displayLink = NULL;
 
 #if CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_OWN_THREAD
-		[_runningThread cancel];
-		[_runningThread release];
-		_runningThread = nil;
+		[runningThread_ cancel];
+		[runningThread_ release];
+		runningThread_ = nil;
 #elif (CC_DIRECTOR_MAC_THREAD == CC_MAC_USE_MAIN_THREAD)
-        _runningThread = nil;
+        runningThread_ = nil;
 #endif
 	}
     
-    _isAnimating = NO;
+    isAnimating_ = NO;
 }
 
 -(void) dealloc
@@ -526,31 +519,31 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	[self.view lockOpenGLContext];
 
 	/* tick before glClear: issue #533 */
-	if( ! _isPaused )
-		[_scheduler update: _dt];
+	if( ! isPaused_ )
+		[scheduler_ update: dt];
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* to avoid flickr, nextScene MUST be here: after tick and before draw.
 	 XXX: Which bug is this one. It seems that it can't be reproduced with v0.9 */
-	if( _nextScene )
+	if( nextScene_ )
 		[self setNextScene];
 
 	kmGLPushMatrix();
 
 
 	/* draw the scene */
-	[_runningScene visit];
+	[runningScene_ visit];
 
 	/* draw the notification node */
-	[_notificationNode visit];
+	[notificationNode_ visit];
 
-	if( _displayStats )
+	if( displayStats_ )
 		[self showStats];
 
 	kmGLPopMatrix();
 
-	_totalFrames++;
+	totalFrames_++;
 	
 
 	// flush buffer
@@ -558,7 +551,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 
 	[self.view unlockOpenGLContext];
 
-	if( _displayStats )
+	if( displayStats_ )
 		[self calculateMPF];
 }
 
@@ -567,8 +560,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 {
 	[super setView:view];
 
-	[view setEventDelegate:_eventDispatcher];
-	[_eventDispatcher setDispatchEvents: YES];
+	[view setEventDelegate:eventDispatcher_];
+	[eventDispatcher_ setDispatchEvents: YES];
 
 	// Enable Touches. Default no.
 	// Only available on OS X 10.6+

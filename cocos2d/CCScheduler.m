@@ -283,12 +283,12 @@ typedef struct _hashSelectorEntry
 
 @implementation CCScheduler
 
-@synthesize timeScale = _timeScale;
+@synthesize timeScale = timeScale_;
 
 - (id) init
 {
 	if( (self=[super init]) ) {
-		_timeScale = 1.0f;
+		timeScale_ = 1.0f;
 
 		// used to trigger CCTimer#update
 		updateSelector = @selector(update:);
@@ -312,7 +312,7 @@ typedef struct _hashSelectorEntry
 
 - (NSString*) description
 {
-	return [NSString stringWithFormat:@"<%@ = %p | timeScale = %0.2f >", [self class], self, _timeScale];
+	return [NSString stringWithFormat:@"<%@ = %p | timeScale = %0.2f >", [self class], self, timeScale_];
 }
 
 - (void) dealloc
@@ -832,8 +832,8 @@ typedef struct _hashSelectorEntry
 {
     updateHashLocked = YES;
 
-	if( _timeScale != 1.0f )
-		dt *= _timeScale;
+	if( timeScale_ != 1.0f )
+		dt *= timeScale_;
 
 	// Iterate all over the Updates selectors
 	tListEntry *entry, *tmp;

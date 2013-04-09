@@ -42,17 +42,19 @@ typedef enum {
  The progress can be Radial, Horizontal or vertical.
  @since v0.99.1
  */
-@interface CCProgressTimer : CCNodeRGBA {
-	CCProgressTimerType	_type;
-	float				_percentage;
-	CCSprite			*_sprite;
+@interface CCProgressTimer : CCNode<CCRGBAProtocol> {
+	CCProgressTimerType	type_;
+	float				percentage_;
+	CCSprite			*sprite_;
 
-	int					_vertexDataCount;
-	ccV2F_C4B_T2F		*_vertexData;
-	CGPoint				_midpoint;
-	CGPoint				_barChangeRate;
-	BOOL				_reverseDirection;
+	int					vertexDataCount_;
+	ccV2F_C4B_T2F		*vertexData_;
+	CGPoint				midpoint_;
+	CGPoint				barChangeRate_;
+	BOOL				reverseDirection_;
 }
+@property (nonatomic) ccColor3B color;
+@property (nonatomic) GLubyte opacity;
 /**	Change the percentage to change progress. */
 @property (nonatomic, readwrite) CCProgressTimerType type;
 @property (nonatomic, readwrite) BOOL reverseDirection;

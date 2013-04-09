@@ -37,11 +37,11 @@
 	buf[i] = 0;
 	
 
-	if(_children) {
+	if(children_) {
 		
 		[self sortAllChildren];
 		
-		ccArray *arrayData = _children->data;
+		ccArray *arrayData = children_->data;
 		i = 0;
 		
 		// draw children zOrder < 0

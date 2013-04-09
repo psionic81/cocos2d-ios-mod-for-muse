@@ -89,8 +89,8 @@ void FNTConfigRemoveCache( void )
 #pragma mark CCBMFontConfiguration
 
 @implementation CCBMFontConfiguration
-@synthesize characterSet=_characterSet;
-@synthesize atlasName=_atlasName;
+@synthesize characterSet=characterSet_;
+@synthesize atlasName=atlasName_;
 
 +(id) configurationWithFNTFile:(NSString*)FNTfile
 {
@@ -101,8 +101,8 @@ void FNTConfigRemoveCache( void )
 {
 	if((self=[super init])) {
         
-		_kerningDictionary = NULL;
-		_fontDefDictionary = NULL;
+		kerningDictionary_ = NULL;
+		fontDefDictionary_ = NULL;
     
 		NSMutableString *validCharsString = [self parseConfigFile:fntFile];
 		  
@@ -111,7 +111,7 @@ void FNTConfigRemoveCache( void )
 			return nil;
 		}
     
-		_characterSet = [[NSCharacterSet characterSetWithCharactersInString:validCharsString] retain];
+		characterSet_ = [[NSCharacterSet characterSetWithCharactersInString:validCharsString] retain];
 	}
 	return self;
 }
@@ -119,19 +119,19 @@ void FNTConfigRemoveCache( void )
 - (void) dealloc
 {
 	CCLOGINFO( @"cocos2d: deallocing %@", self);
-	[_characterSet release];
+	[characterSet_ release];
 	[self purgeFontDefDictionary];
 	[self purgeKerningDictionary];
-	[_atlasName release];
+	[atlasName_ release];
 	[super dealloc];
 }
 
 - (NSString*) description
 {
 	return [NSString stringWithFormat:@"<%@ = %p | Glphys:%d Kernings:%d | Image = %@>", [self class], self,
-			HASH_COUNT(_fontDefDictionary),
-			HASH_COUNT(_kerningDictionary),
-			_atlasName];
+			HASH_COUNT(fontDefDictionary_),
+			HASH_COUNT(kerningDictionary_),
+			atlasName_];
 }
 
 
@@ -139,8 +139,8 @@ void FNTConfigRemoveCache( void )
 {	
 	tCCFontDefHashElement *current, *tmp;
 	
-	HASH_ITER(hh, _fontDefDictionary, current, tmp) {
-		HASH_DEL(_fontDefDictionary, current);
+	HASH_ITER(hh, fontDefDictionary_, current, tmp) {
+		HASH_DEL(fontDefDictionary_, current);
 		free(current);
 	}
 }
@@ -149,16 +149,16 @@ void FNTConfigRemoveCache( void )
 {
 	tCCKerningHashElement *current;
     
-	while(_kerningDictionary) {
-		current = _kerningDictionary;
-		HASH_DEL(_kerningDictionary,current);
+	while(kerningDictionary_) {
+		current = kerningDictionary_;
+		HASH_DEL(kerningDictionary_,current);
 		free(current);
 	}
 }
 
 - (NSMutableString *)parseConfigFile:(NSString*)fntFile
 {
-	NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathForFilename:fntFile];
+	NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:fntFile];
 	NSError *error;
 	NSString *contents = [NSString stringWithContentsOfFile:fullpath encoding:NSUTF8StringEncoding error:&error];
   
@@ -203,7 +203,7 @@ void FNTConfigRemoveCache( void )
 			[self parseCharacterDefinition:line charDef:&element->fontDef];
 			
 			element->key = element->fontDef.charID;
-			HASH_ADD_INT(_fontDefDictionary, key, element);
+			HASH_ADD_INT(fontDefDictionary_, key, element);
       
 			[validCharsString appendString:[NSString stringWithFormat:@"%C", element->fontDef.charID]];
 		}
@@ -245,9 +245,9 @@ void FNTConfigRemoveCache( void )
     
 	// Supports subdirectories
 	NSString *dir = [fntFile stringByDeletingLastPathComponent];
-	_atlasName = [dir stringByAppendingPathComponent:propertyValue];
+	atlasName_ = [dir stringByAppendingPathComponent:propertyValue];
     
-	[_atlasName retain];
+	[atlasName_ retain];
 }
 
 -(void) parseInfoArguments:(NSString*)line
@@ -299,21 +299,21 @@ void FNTConfigRemoveCache( void )
 		NSEnumerator *paddingEnum = [paddingValues objectEnumerator];
 		// padding top
 		propertyValue = [paddingEnum nextObject];
-		_padding.top = [propertyValue intValue];
+		padding_.top = [propertyValue intValue];
         
 		// padding right
 		propertyValue = [paddingEnum nextObject];
-		_padding.right = [propertyValue intValue];
+		padding_.right = [propertyValue intValue];
         
 		// padding bottom
 		propertyValue = [paddingEnum nextObject];
-		_padding.bottom = [propertyValue intValue];
+		padding_.bottom = [propertyValue intValue];
         
 		// padding left
 		propertyValue = [paddingEnum nextObject];
-		_padding.left = [propertyValue intValue];
+		padding_.left = [propertyValue intValue];
         
-		CCLOG(@"cocos2d: padding: %d,%d,%d,%d", _padding.left, _padding.top, _padding.right, _padding.bottom);
+		CCLOG(@"cocos2d: padding: %d,%d,%d,%d", padding_.left, padding_.top, padding_.right, padding_.bottom);
 	}
     
 	// spacing (ignore)
@@ -335,7 +335,7 @@ void FNTConfigRemoveCache( void )
     
 	// Character ID
 	propertyValue = [nse nextObject];
-	_commonHeight = [propertyValue intValue];
+	commonHeight_ = [propertyValue intValue];
     
 	// base (ignore)
 	[nse nextObject];
@@ -417,7 +417,7 @@ void FNTConfigRemoveCache( void )
 	tCCKerningHashElement *element = calloc( sizeof( *element ), 1 );
 	element->amount = amount;
 	element->key = (first<<16) | (second&0xffff);
-	HASH_ADD_INT(_kerningDictionary,key, element);
+	HASH_ADD_INT(kerningDictionary_,key, element);
 }
 
 @end
@@ -438,8 +438,9 @@ void FNTConfigRemoveCache( void )
 
 @implementation CCLabelBMFont
 
-@synthesize alignment = _alignment;
-@synthesize cascadeColorEnabled = _cascadeColorEnabled, cascadeOpacityEnabled = _cascadeOpacityEnabled;
+@synthesize alignment = alignment_;
+@synthesize opacity = opacity_, color = color_;
+
 
 #pragma mark LabelBMFont - Purge Cache
 +(void) purgeCachedData
@@ -482,7 +483,7 @@ void FNTConfigRemoveCache( void )
 // designated initializer
 -(id) initWithString:(NSString*)theString fntFile:(NSString*)fntFile width:(float)width alignment:(CCTextAlignment)alignment imageOffset:(CGPoint)offset
 {
-	NSAssert(!_configuration, @"re-init is no longer supported");
+	NSAssert(!configuration_, @"re-init is no longer supported");
 	
 	// if theString && fntfile are both nil, then it is OK
 	NSAssert( (theString && fntFile) || (theString==nil && fntFile==nil), @"Invalid params for CCLabelBMFont");
@@ -497,34 +498,32 @@ void FNTConfigRemoveCache( void )
 			return nil;
 		}
         
-		_configuration = [newConf retain];
-		_fntFile = [fntFile copy];
+		configuration_ = [newConf retain];
+		fntFile_ = [fntFile copy];
         
-		texture = [[CCTextureCache sharedTextureCache] addImage:_configuration.atlasName];
+		texture = [[CCTextureCache sharedTextureCache] addImage:configuration_.atlasName];
         
 	} else
 		texture = [[[CCTexture2D alloc] init] autorelease];
     
     
-	if ( (self=[super initWithTexture:texture capacity:[theString length]]) ) {
-        _width = width;
-        _alignment = alignment;
-
-		_displayedOpacity = _realOpacity = 255;
-		_displayedColor = _realColor = ccWHITE;
-        _cascadeOpacityEnabled = YES;
-        _cascadeColorEnabled = YES;
-
-		_contentSize = CGSizeZero;
-		
-		_opacityModifyRGB = [[_textureAtlas texture] hasPremultipliedAlpha];
-		
-		_anchorPoint = ccp(0.5f, 0.5f);
+	if( (self=[super initWithTexture:texture capacity:[theString length]]) ) {
+        width_ = width;
+        alignment_ = alignment;
         
-		_imageOffset = offset;
+		opacity_ = 255;
+		color_ = ccWHITE;
+		
+		contentSize_ = CGSizeZero;
+		
+		opacityModifyRGB_ = [[textureAtlas_ texture] hasPremultipliedAlpha];
+		
+		anchorPoint_ = ccp(0.5f, 0.5f);
         
-		_reusedChar = [[CCSprite alloc] initWithTexture:_textureAtlas.texture rect:CGRectMake(0, 0, 0, 0) rotated:NO];
-		[_reusedChar setBatchNode:self];
+		imageOffset_ = offset;
+        
+		reusedChar_ = [[CCSprite alloc] initWithTexture:textureAtlas_.texture rect:CGRectMake(0, 0, 0, 0) rotated:NO];
+		[reusedChar_ setBatchNode:self];
 
 		[self setString:theString updateLabel:YES];
 	}
@@ -534,11 +533,11 @@ void FNTConfigRemoveCache( void )
 
 -(void) dealloc
 {
-	[_string release];
-    [_initialString release];
-	[_configuration release];
-    [_fntFile release];
-	[_reusedChar release];
+	[string_ release];
+    [initialString_ release];
+	[configuration_ release];
+    [fntFile_ release];
+	[reusedChar_ release];
     
 	[super dealloc];
 }
@@ -547,9 +546,9 @@ void FNTConfigRemoveCache( void )
 
 - (void)updateLabel
 {	
-    [self setString:_initialString updateLabel:NO];
+    [self setString:initialString_ updateLabel:NO];
 	
-    if (_width > 0){
+    if (width_ > 0){
         //Step 1: Make multiline
 		
         NSString *multilineString = @"", *lastWord = @"";
@@ -558,12 +557,11 @@ void FNTConfigRemoveCache( void )
         float startOfLine = -1, startOfWord = -1;
         int skip = 0;
         //Go through each character and insert line breaks as necessary
-        for (int j = 0; j < [_children count]; j++) {
+        for (int j = 0; j < [children_ count]; j++) {
             CCSprite *characterSprite;
-            int justSkipped = 0;
-            while(!(characterSprite = (CCSprite *)[self getChildByTag:j+skip+justSkipped]))
-                justSkipped++;
-            skip += justSkipped;
+			
+            while(!(characterSprite = (CCSprite *)[self getChildByTag:j+skip]))
+                skip++;
 			
             if (!characterSprite.visible)
 				continue;
@@ -582,14 +580,13 @@ void FNTConfigRemoveCache( void )
             //Put lastWord on the current line and start a new line
             //Reset lastWord
             if ([[NSCharacterSet newlineCharacterSet] characterIsMember:character]) {
-                lastWord = [lastWord stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-                lastWord = [lastWord stringByPaddingToLength:[lastWord length] + justSkipped withString:[NSString stringWithFormat:@"%C", character] startingAtIndex:0];
+                lastWord = [[lastWord stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByAppendingFormat:@"%C", character];
                 multilineString = [multilineString stringByAppendingString:lastWord];
                 lastWord = @"";
                 startOfWord = -1;
                 line++;
                 startOfLine = -1;
-                i+=justSkipped;
+                i++;
 				
                 //CCLabelBMFont do not have a character for new lines, so do NOT "continue;" in the for loop. Process the next character
                 if (i >= stringLength || i < 0)
@@ -617,7 +614,7 @@ void FNTConfigRemoveCache( void )
             //Character is out of bounds
             //Do not put lastWord on current line. Add "\n" to current line to start a new line
             //Append to lastWord
-            if (characterSprite.position.x + characterSprite.contentSize.width/2 - startOfLine >  _width) {
+            if (characterSprite.position.x + characterSprite.contentSize.width/2 - startOfLine >  width_) {
                 lastWord = [lastWord stringByAppendingFormat:@"%C", character];
                 NSString *trimmedString = [multilineString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
                 multilineString = [trimmedString stringByAppendingString:@"\n"];
@@ -647,7 +644,7 @@ void FNTConfigRemoveCache( void )
         //Number of spaces skipped
         int lineNumber = 0;
         //Go through line by line
-        for (NSString *lineString in [_string componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]) {
+        for (NSString *lineString in [string_ componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]]) {
             int lineWidth = 0;
 			
             //Find index of last character in this line
@@ -696,9 +693,9 @@ void FNTConfigRemoveCache( void )
 	int ret = 0;
 	unsigned int key = (first<<16) | (second & 0xffff);
     
-	if( _configuration->_kerningDictionary ) {
+	if( configuration_->kerningDictionary_ ) {
 		tCCKerningHashElement *element = NULL;
-		HASH_FIND_INT(_configuration->_kerningDictionary, &key, element);
+		HASH_FIND_INT(configuration_->kerningDictionary_, &key, element);
 		if(element)
 			ret = element->amount;
 	}
@@ -720,36 +717,36 @@ void FNTConfigRemoveCache( void )
     
 	NSUInteger quantityOfLines = 1;
   
-	NSCharacterSet *charSet	= _configuration.characterSet;
+	NSCharacterSet *charSet	= configuration_.characterSet;
     
-	NSUInteger stringLen = [_string length];
+	NSUInteger stringLen = [string_ length];
 	if( ! stringLen )
 		return;
     
 	// quantity of lines NEEDS to be calculated before parsing the lines,
 	// since the Y position needs to be calcualted before hand
 	for(NSUInteger i=0; i < stringLen-1;i++) {
-		unichar c = [_string characterAtIndex:i];
+		unichar c = [string_ characterAtIndex:i];
 		if( c=='\n')
 			quantityOfLines++;
 	}
     
-	totalHeight = _configuration->_commonHeight * quantityOfLines;
-	nextFontPositionY = -(_configuration->_commonHeight - _configuration->_commonHeight*quantityOfLines);
+	totalHeight = configuration_->commonHeight_ * quantityOfLines;
+	nextFontPositionY = -(configuration_->commonHeight_ - configuration_->commonHeight_*quantityOfLines);
     CGRect rect;
     ccBMFontDef fontDef;
 
 	for(NSUInteger i = 0; i<stringLen; i++) {
-		unichar c = [_string characterAtIndex:i];
+		unichar c = [string_ characterAtIndex:i];
         
 		if (c == '\n') {
 			nextFontPositionX = 0;
-			nextFontPositionY -= _configuration->_commonHeight;
+			nextFontPositionY -= configuration_->commonHeight_;
 			continue;
 		}
     
 		if(![charSet characterIsMember:c]){
-			CCLOGWARN(@"cocos2d: CCLabelBMFont: Attempted to use character not defined in this bitmap: %C", c);
+			CCLOGWARN(@"CCLabelBMFont: Attempted to use character not defined in this bitmap: %C", c);
 			continue;
 		}
         
@@ -759,9 +756,9 @@ void FNTConfigRemoveCache( void )
 		
 		// unichar is a short, and an int is needed on HASH_FIND_INT
 		NSUInteger key = (NSUInteger)c;
-		HASH_FIND_INT(_configuration->_fontDefDictionary , &key, element);
+		HASH_FIND_INT(configuration_->fontDefDictionary_ , &key, element);
 		if( ! element ) {
-			CCLOGWARN(@"cocos2d: CCLabelBMFont: characer not found %c", c);
+			CCLOGWARN(@"cocos2d: LabelBMFont: characer not found %c", c);
 			continue;
 		}
         
@@ -770,49 +767,38 @@ void FNTConfigRemoveCache( void )
         rect = fontDef.rect;
 		rect = CC_RECT_PIXELS_TO_POINTS(rect);
 		
-		rect.origin.x += _imageOffset.x;
-		rect.origin.y += _imageOffset.y;
+		rect.origin.x += imageOffset_.x;
+		rect.origin.y += imageOffset_.y;
         
 		CCSprite *fontChar;
 
 		BOOL hasSprite = YES;
 		fontChar = (CCSprite*) [self getChildByTag:i];
-		if( fontChar )
-		{
-			// Reusing previous Sprite
-			fontChar.visible = YES;
-		}
-		else
-		{
-			// New Sprite ? Set correct color, opacity, etc...
+		if( ! fontChar ) {
 			if( 0 ) {
 				/* WIP: Doesn't support many features yet.
 				 But this code is super fast. It doesn't create any sprite.
 				 Ideal for big labels.
 				 */
-				fontChar = _reusedChar;
+				fontChar = reusedChar_;
 				fontChar.batchNode = nil;
 				hasSprite = NO;
 			} else {
-				fontChar = [[CCSprite alloc] initWithTexture:_textureAtlas.texture rect:rect];
+				fontChar = [[CCSprite alloc] initWithTexture:textureAtlas_.texture rect:rect];
 				[self addChild:fontChar z:i tag:i];
 				[fontChar release];
 			}
-			
-			// Apply label properties
-			[fontChar setOpacityModifyRGB:_opacityModifyRGB];
-
-			// Color MUST be set before opacity, since opacity might change color if OpacityModifyRGB is on
-			[fontChar updateDisplayedColor:_displayedColor];
-			[fontChar updateDisplayedOpacity:_displayedOpacity];
 		}
 
 		// updating previous sprite
 		[fontChar setTextureRect:rect rotated:NO untrimmedSize:rect.size];
-	
+		
+		// restore to default in case they were modified
+		fontChar.visible = YES;
+		fontChar.opacity = 255;
         
 		// See issue 1343. cast( signed short + unsigned integer ) == unsigned integer (sign is lost!)
-		NSInteger yOffset = _configuration->_commonHeight - fontDef.yOffset;
+		NSInteger yOffset = configuration_->commonHeight_ - fontDef.yOffset;
 		CGPoint fontPos = ccp( (CGFloat)nextFontPositionX + fontDef.xOffset + fontDef.rect.size.width*0.5f + kerningAmount,
 							  (CGFloat)nextFontPositionY + yOffset - rect.size.height*0.5f * CC_CONTENT_SCALE_FACTOR() );
         fontChar.position = CC_POINT_PIXELS_TO_POINTS(fontPos);
@@ -821,7 +807,16 @@ void FNTConfigRemoveCache( void )
 		nextFontPositionX += fontDef.xAdvance + kerningAmount;
 		prev = c;
         
-
+		// Apply label properties
+		[fontChar setOpacityModifyRGB:opacityModifyRGB_];
+		// Color MUST be set before opacity, since opacity might change color if OpacityModifyRGB is on
+		[fontChar setColor:color_];
+        
+		// only apply opacity if it is different than 255 )
+		// to prevent modifying the color too (issue #610)
+		if( opacity_ != 255 )
+			[fontChar setOpacity: opacity_];
+        
 		if (longestLine < nextFontPositionX)
 			longestLine = nextFontPositionX;
 		
@@ -845,7 +840,7 @@ void FNTConfigRemoveCache( void )
 #pragma mark LabelBMFont - CCLabelProtocol protocol
 -(NSString*) string
 {
-	return _string;
+	return string_;
 }
 
 -(void) setCString:(char*)label
@@ -861,15 +856,15 @@ void FNTConfigRemoveCache( void )
 - (void) setString:(NSString*) newString updateLabel:(BOOL)update
 {
     if( !update ) {
-        [_string release];
-        _string = [newString copy];
+        [string_ release];
+        string_ = [newString copy];
     } else {
-        [_initialString release];
-        _initialString = [newString copy];
+        [initialString_ release];
+        initialString_ = [newString copy];
     }
 	
     CCSprite *child;
-    CCARRAY_FOREACH(_children, child)
+    CCARRAY_FOREACH(children_, child)
 		child.visible = NO;
 	
 	[self createFontChars];
@@ -880,91 +875,41 @@ void FNTConfigRemoveCache( void )
 
 #pragma mark LabelBMFont - CCRGBAProtocol protocol
 
--(ccColor3B) color
-{
-	return _realColor;
-}
-
--(ccColor3B) displayedColor
-{
-	return _displayedColor;
-}
-
 -(void) setColor:(ccColor3B)color
 {
-	_displayedColor = _realColor = color;
-	
-	if( _cascadeColorEnabled ) {
-		ccColor3B parentColor = ccWHITE;
-		if( [_parent conformsToProtocol:@protocol(CCRGBAProtocol)] && [(id<CCRGBAProtocol>)_parent isCascadeColorEnabled] )
-			parentColor = [(id<CCRGBAProtocol>)_parent displayedColor];
-		[self updateDisplayedColor:parentColor];
-	}
+	color_ = color;
+    
+	CCSprite *child;
+	CCARRAY_FOREACH(children_, child)
+		[child setColor:color_];
 }
 
--(GLubyte) opacity
+-(void) setOpacity:(GLubyte)opacity
 {
-	return _realOpacity;
-}
-
--(GLubyte) displayedOpacity
-{
-	return _displayedOpacity;
-}
-
-/** Override synthesized setOpacity to recurse items */
-- (void) setOpacity:(GLubyte)opacity
-{
-	_displayedOpacity = _realOpacity = opacity;
-
-	if( _cascadeOpacityEnabled ) {
-		GLubyte parentOpacity = 255;
-		if( [_parent conformsToProtocol:@protocol(CCRGBAProtocol)] && [(id<CCRGBAProtocol>)_parent isCascadeOpacityEnabled] )
-			parentOpacity = [(id<CCRGBAProtocol>)_parent displayedOpacity];
-		[self updateDisplayedOpacity:parentOpacity];
-	}
-}
-
--(void) setOpacityModifyRGB:(BOOL)modify
-{
-	_opacityModifyRGB = modify;
+	opacity_ = opacity;
     
 	id<CCRGBAProtocol> child;
-	CCARRAY_FOREACH(_children, child)
+	CCARRAY_FOREACH(children_, child)
+		[child setOpacity:opacity_];
+}
+-(void) setOpacityModifyRGB:(BOOL)modify
+{
+	opacityModifyRGB_ = modify;
+    
+	id<CCRGBAProtocol> child;
+	CCARRAY_FOREACH(children_, child)
 		[child setOpacityModifyRGB:modify];
 }
 
 -(BOOL) doesOpacityModifyRGB
 {
-	return _opacityModifyRGB;
-}
-
-- (void)updateDisplayedOpacity:(GLubyte)parentOpacity
-{
-	_displayedOpacity = _realOpacity * parentOpacity/255.0;
-
-	CCSprite *item;
-	CCARRAY_FOREACH(_children, item) {
-		[item updateDisplayedOpacity:_displayedOpacity];
-	}
-}
-
-- (void)updateDisplayedColor:(ccColor3B)parentColor
-{
-	_displayedColor.r = _realColor.r * parentColor.r/255.0;
-	_displayedColor.g = _realColor.g * parentColor.g/255.0;
-	_displayedColor.b = _realColor.b * parentColor.b/255.0;
-
-	CCSprite *item;
-	CCARRAY_FOREACH(_children, item) {
-		[item updateDisplayedColor:_displayedColor];
-	}
+	return opacityModifyRGB_;
 }
 
 #pragma mark LabelBMFont - AnchorPoint
 -(void) setAnchorPoint:(CGPoint)point
 {
-	if( ! CGPointEqualToPoint(point, _anchorPoint) ) {
+	if( ! CGPointEqualToPoint(point, anchorPoint_) ) {
 		[super setAnchorPoint:point];
 		[self createFontChars];
 	}
@@ -972,38 +917,38 @@ void FNTConfigRemoveCache( void )
 
 #pragma mark LabelBMFont - Alignment
 - (void)setWidth:(float)width {
-    _width = width;
+    width_ = width;
     [self updateLabel];
 }
 
 - (void)setAlignment:(CCTextAlignment)alignment {
-    _alignment = alignment;
+    alignment_ = alignment;
     [self updateLabel];
 }
 
 #pragma mark LabelBMFont - FntFile
 - (void) setFntFile:(NSString*) fntFile
 {
-	if( fntFile != _fntFile ) {
+	if( fntFile != fntFile_ ) {
 		
 		CCBMFontConfiguration *newConf = FNTConfigLoadFile(fntFile);
 		
 		NSAssert( newConf, @"CCLabelBMFont: Impossible to create font. Please check file: '%@'", fntFile );
 		
-		[_fntFile release];
-		_fntFile = [fntFile retain];
+		[fntFile_ release];
+		fntFile_ = [fntFile retain];
 		
-		[_configuration release];
-		_configuration = [newConf retain];
+		[configuration_ release];
+		configuration_ = [newConf retain];
         
-		[self setTexture:[[CCTextureCache sharedTextureCache] addImage:_configuration.atlasName]];
+		[self setTexture:[[CCTextureCache sharedTextureCache] addImage:configuration_.atlasName]];
 		[self createFontChars];
 	}
 }
 
 - (NSString*) fntFile
 {
-    return _fntFile;
+    return fntFile_;
 }
 
 #pragma mark LabelBMFont - Debug draw

@@ -41,10 +41,10 @@
 */
 @interface CCTMXObjectGroup : NSObject
 {
-	NSString			*_groupName;
-	CGPoint				_positionOffset;
-	NSMutableArray		*_objects;
-	NSMutableDictionary	*_properties;
+	NSString			*groupName_;
+	CGPoint				positionOffset_;
+	NSMutableArray		*objects_;
+	NSMutableDictionary	*properties_;
 }
 
 /** name of the group */

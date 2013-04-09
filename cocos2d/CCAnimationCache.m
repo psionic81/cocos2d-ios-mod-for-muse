@@ -39,32 +39,32 @@
 
 #pragma mark CCAnimationCache - Alloc, Init & Dealloc
 
-static CCAnimationCache *_sharedAnimationCache=nil;
+static CCAnimationCache *sharedAnimationCache_=nil;
 
 + (CCAnimationCache *)sharedAnimationCache
 {
-	if (!_sharedAnimationCache)
-		_sharedAnimationCache = [[CCAnimationCache alloc] init];
+	if (!sharedAnimationCache_)
+		sharedAnimationCache_ = [[CCAnimationCache alloc] init];
 
-	return _sharedAnimationCache;
+	return sharedAnimationCache_;
 }
 
 +(id)alloc
 {
-	NSAssert(_sharedAnimationCache == nil, @"Attempted to allocate a second instance of a singleton.");
+	NSAssert(sharedAnimationCache_ == nil, @"Attempted to allocate a second instance of a singleton.");
 	return [super alloc];
 }
 
 +(void)purgeSharedAnimationCache
 {
-	[_sharedAnimationCache release];
-	_sharedAnimationCache = nil;
+	[sharedAnimationCache_ release];
+	sharedAnimationCache_ = nil;
 }
 
 -(id) init
 {
 	if( (self=[super init]) ) {
-		_animations = [[NSMutableDictionary alloc] initWithCapacity: 20];
+		animations_ = [[NSMutableDictionary alloc] initWithCapacity: 20];
 	}
 
 	return self;
@@ -72,14 +72,14 @@ static CCAnimationCache *_sharedAnimationCache=nil;
 
 - (NSString*) description
 {
-	return [NSString stringWithFormat:@"<%@ = %p | num of animations =  %lu>", [self class], self, (unsigned long)[_animations count]];
+	return [NSString stringWithFormat:@"<%@ = %p | num of animations =  %lu>", [self class], self, (unsigned long)[animations_ count]];
 }
 
 -(void) dealloc
 {
 	CCLOGINFO(@"cocos2d: deallocing %@", self);
 
-	[_animations release];
+	[animations_ release];
 	[super dealloc];
 }
 
@@ -87,7 +87,7 @@ static CCAnimationCache *_sharedAnimationCache=nil;
 
 -(void) addAnimation:(CCAnimation*)animation name:(NSString*)name
 {
-	[_animations setObject:animation forKey:name];
+	[animations_ setObject:animation forKey:name];
 }
 
 -(void) removeAnimationByName:(NSString*)name
@@ -95,12 +95,12 @@ static CCAnimationCache *_sharedAnimationCache=nil;
 	if( ! name )
 		return;
 
-	[_animations removeObjectForKey:name];
+	[animations_ removeObjectForKey:name];
 }
 
 -(CCAnimation*) animationByName:(NSString*)name
 {
-	return [_animations objectForKey:name];
+	return [animations_ objectForKey:name];
 }
 
 #pragma mark CCAnimationCache - from file
@@ -238,7 +238,7 @@ static CCAnimationCache *_sharedAnimationCache=nil;
 {
 	NSAssert( plist, @"Invalid texture file name");
 
-    NSString *path = [[CCFileUtils sharedFileUtils] fullPathForFilename:plist];
+    NSString *path = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:plist];
 	NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];
 
 	NSAssert1( dict, @"CCAnimationCache: File could not be found: %@", plist);

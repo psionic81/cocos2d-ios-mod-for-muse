@@ -43,9 +43,9 @@
  */
 @interface CCAnimationFrame : NSObject <NSCopying>
 {
-    CCSpriteFrame* _spriteFrame;
-    float _delayUnits;
-    NSDictionary *_userInfo;
+    CCSpriteFrame* spriteFrame_;
+    float delayUnits_;
+    NSDictionary *userInfo_;
 }
 /** CCSpriteFrameName to be used */
 @property (nonatomic, readwrite, retain) CCSpriteFrame* spriteFrame;
@@ -70,11 +70,11 @@
  */
 @interface CCAnimation : NSObject <NSCopying>
 {
-	NSMutableArray	*_frames;
-	float			_totalDelayUnits;
-	float			_delayPerUnit;
-	BOOL			_restoreOriginalFrame;
-	NSUInteger		_loops;
+	NSMutableArray	*frames_;
+	float			totalDelayUnits_;
+	float			delayPerUnit_;
+	BOOL			restoreOriginalFrame_;
+	NSUInteger		loops_;
 }
 
 /** total Delay units of the CCAnimation. */

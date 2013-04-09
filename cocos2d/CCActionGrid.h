@@ -33,16 +33,16 @@
 /** Base class for Grid actions */
 @interface CCGridAction : CCActionInterval
 {
-	CGSize _gridSize;
+	ccGridSize gridSize_;
 }
 
 /** size of the grid */
-@property (nonatomic,readwrite) CGSize gridSize;
+@property (nonatomic,readwrite) ccGridSize gridSize;
 
 /** creates the action with size and duration */
-+(id) actionWithDuration:(ccTime)duration size:(CGSize)gridSize;
++(id) actionWithSize:(ccGridSize)size duration:(ccTime)d;
 /** initializes the action with size and duration */
--(id) initWithDuration:(ccTime)duration size:(CGSize)gridSize;
+-(id) initWithSize:(ccGridSize)gridSize duration:(ccTime)d;
 /** returns the grid */
 -(CCGridBase *)grid;
 
@@ -58,11 +58,11 @@
 }
 
 /** returns the vertex than belongs to certain position in the grid */
--(ccVertex3F)vertex:(CGPoint)position;
+-(ccVertex3F)vertex:(ccGridSize)pos;
 /** returns the non-transformed vertex than belongs to certain position in the grid */
--(ccVertex3F)originalVertex:(CGPoint)position;
+-(ccVertex3F)originalVertex:(ccGridSize)pos;
 /** sets a new vertex to a certain position of the grid */
--(void)setVertex:(CGPoint)position vertex:(ccVertex3F)vertex;
+-(void)setVertex:(ccGridSize)pos vertex:(ccVertex3F)vertex;
 
 @end
 
@@ -74,11 +74,11 @@
 }
 
 /** returns the tile that belongs to a certain position of the grid */
--(ccQuad3)tile:(CGPoint)position;
+-(ccQuad3)tile:(ccGridSize)pos;
 /** returns the non-transformed tile that belongs to a certain position of the grid */
--(ccQuad3)originalTile:(CGPoint)position;
+-(ccQuad3)originalTile:(ccGridSize)pos;
 /** sets a new tile to a certain position of the grid */
--(void)setTile:(CGPoint)position coords:(ccQuad3)coords;
+-(void)setTile:(ccGridSize)pos coords:(ccQuad3)coords;
 
 @end
 
@@ -87,8 +87,8 @@
 /** CCAccelDeccelAmplitude action */
 @interface CCAccelDeccelAmplitude : CCActionInterval
 {
-	float			_rate;
-	CCActionInterval *_other;
+	float			rate_;
+	CCActionInterval *other_;
 }
 
 /** amplitude rate */
@@ -106,8 +106,8 @@
 /** CCAccelAmplitude action */
 @interface CCAccelAmplitude : CCActionInterval
 {
-	float			_rate;
-	CCActionInterval *_other;
+	float			rate_;
+	CCActionInterval *other_;
 }
 
 /** amplitude rate */
@@ -125,8 +125,8 @@
 /** CCDeccelAmplitude action */
 @interface CCDeccelAmplitude : CCActionInterval
 {
-	float			_rate;
-	CCActionInterval *_other;
+	float			rate_;
+	CCActionInterval *other_;
 }
 
 /** amplitude rate */
@@ -156,7 +156,7 @@
 /** CCReuseGrid action */
 @interface CCReuseGrid : CCActionInstant
 {
-	int _times;
+	int t_;
 }
 /** creates an action with the number of times that the current grid will be reused */
 +(id) actionWithTimes: (int) times;

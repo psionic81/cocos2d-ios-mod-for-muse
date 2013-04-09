@@ -28,14 +28,14 @@
 /** CCShakyTiles3D action */
 @interface CCShakyTiles3D : CCTiledGrid3DAction
 {
-	int		_randrange;
-	BOOL	_shakeZ;
+	int		randrange;
+	BOOL	shakeZ;
 }
 
 /** creates the action with a range, whether or not to shake Z vertices, a grid size, and duration */
-+(id)actionWithDuration:(ccTime)duration size:(CGSize)gridSize range:(int)range shakeZ:(BOOL)shakeZ;
++(id)actionWithRange:(int)range shakeZ:(BOOL)shakeZ grid:(ccGridSize)gridSize duration:(ccTime)d;
 /** initializes the action with a range, whether or not to shake Z vertices, a grid size, and duration */
--(id)initWithDuration:(ccTime)duration size:(CGSize)gridSize range:(int)range shakeZ:(BOOL)shakeZ;
+-(id)initWithRange:(int)range shakeZ:(BOOL)shakeZ grid:(ccGridSize)gridSize duration:(ccTime)d;
 
 @end
 
@@ -44,15 +44,15 @@
 /** CCShatteredTiles3D action */
 @interface CCShatteredTiles3D : CCTiledGrid3DAction
 {
-	int		_randrange;
-	BOOL	_once;
-	BOOL	_shatterZ;
+	int		randrange;
+	BOOL	once;
+	BOOL	shatterZ;
 }
 
 /** creates the action with a range, whether of not to shatter Z vertices, a grid size and duration */
-+(id)actionWithDuration:(ccTime)duration size:(CGSize)gridSize range:(int)range shatterZ:(BOOL)shatterZ;
++(id)actionWithRange:(int)range shatterZ:(BOOL)shatterZ grid:(ccGridSize)gridSize duration:(ccTime)d;
 /** initializes the action with a range, whether or not to shatter Z vertices, a grid size and duration */
--(id)initWithDuration:(ccTime)duration size:(CGSize)gridSize range:(int)range shatterZ:(BOOL)shatterZ;
+-(id)initWithRange:(int)range shatterZ:(BOOL)shatterZ grid:(ccGridSize)gridSize duration:(ccTime)d;
 
 @end
 
@@ -63,16 +63,16 @@
  */
 @interface CCShuffleTiles : CCTiledGrid3DAction
 {
-	unsigned	_seed;
-	NSUInteger _tilesCount;
-	NSUInteger *_tilesOrder;
-	void *_tiles;
+	int	seed;
+	NSUInteger tilesCount;
+	int *tilesOrder;
+	void *tiles;
 }
 
 /** creates the action with a random seed, the grid size and the duration */
-+(id)actionWithDuration:(ccTime)duration size:(CGSize)gridSize seed:(unsigned)seed;
++(id)actionWithSeed:(int)s grid:(ccGridSize)gridSize duration:(ccTime)d;
 /** initializes the action with a random seed, the grid size and the duration */
--(id)initWithDuration:(ccTime)duration size:(CGSize)gridSize seed:(unsigned)seed;
+-(id)initWithSeed:(int)s grid:(ccGridSize)gridSize duration:(ccTime)d;
 
 @end
 
@@ -84,8 +84,6 @@
 @interface CCFadeOutTRTiles : CCTiledGrid3DAction
 {
 }
-// XXX: private, but added to make BridgeSupport happy
--(float)testFunc:(CGSize)pos time:(ccTime)time;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -96,8 +94,6 @@
 @interface CCFadeOutBLTiles : CCFadeOutTRTiles
 {
 }
-// XXX: private, but added to make BridgeSupport happy
--(float)testFunc:(CGSize)pos time:(ccTime)time;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -108,8 +104,6 @@
 @interface CCFadeOutUpTiles : CCFadeOutTRTiles
 {
 }
-// XXX: private, but added to make BridgeSupport happy
--(float)testFunc:(CGSize)pos time:(ccTime)time;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -120,8 +114,6 @@
 @interface CCFadeOutDownTiles : CCFadeOutUpTiles
 {
 }
-// XXX: private, but added to make BridgeSupport happy
--(float)testFunc:(CGSize)pos time:(ccTime)time;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -131,15 +123,15 @@
  */
 @interface CCTurnOffTiles : CCTiledGrid3DAction
 {
-	unsigned	_seed;
-	NSUInteger _tilesCount;
-	NSUInteger *_tilesOrder;
+	int	seed;
+	NSUInteger tilesCount;
+	int *tilesOrder;
 }
 
 /** creates the action with a random seed, the grid size and the duration */
-+(id)actionWithDuration:(ccTime)duration size:(CGSize)gridSize seed:(unsigned)seed;
++(id)actionWithSeed:(int)s grid:(ccGridSize)gridSize duration:(ccTime)d;
 /** initializes the action with a random seed, the grid size and the duration */
--(id)initWithDuration:(ccTime)duration size:(CGSize)gridSize seed:(unsigned)seed;
+-(id)initWithSeed:(int)s grid:(ccGridSize)gridSize duration:(ccTime)d;
 @end
 
 ////////////////////////////////////////////////////////////
@@ -147,9 +139,9 @@
 /** CCWavesTiles3D action. */
 @interface CCWavesTiles3D : CCTiledGrid3DAction
 {
-	NSUInteger _waves;
-	float _amplitude;
-	float _amplitudeRate;
+	int waves;
+	float amplitude;
+	float amplitudeRate;
 }
 
 /** waves amplitude */
@@ -158,9 +150,9 @@
 @property (nonatomic,readwrite) float amplitudeRate;
 
 /** creates the action with a number of waves, the waves amplitude, the grid size and the duration */
-+(id)actionWithDuration:(ccTime)duration size:(CGSize)gridSize waves:(NSUInteger)wav amplitude:(float)amp;
++(id)actionWithWaves:(int)wav amplitude:(float)amp grid:(ccGridSize)gridSize duration:(ccTime)d;
 /** initializes the action with a number of waves, the waves amplitude, the grid size and the duration */
--(id)initWithDuration:(ccTime)duration size:(CGSize)gridSize waves:(NSUInteger)wav amplitude:(float)amp;
+-(id)initWithWaves:(int)wav amplitude:(float)amp grid:(ccGridSize)gridSize duration:(ccTime)d;
 
 @end
 
@@ -171,9 +163,9 @@
  */
 @interface CCJumpTiles3D : CCTiledGrid3DAction
 {
-	NSUInteger _jumps;
-	float _amplitude;
-	float _amplitudeRate;
+	int jumps;
+	float amplitude;
+	float amplitudeRate;
 }
 
 /** amplitude of the sin*/
@@ -182,9 +174,9 @@
 @property (nonatomic,readwrite) float amplitudeRate;
 
 /** creates the action with the number of jumps, the sin amplitude, the grid size and the duration */
-+(id)actionWithDuration:(ccTime)duration size:(CGSize)gridSize jumps:(NSUInteger)numberOfJumps amplitude:(float)amplitude;
++(id)actionWithJumps:(int)j amplitude:(float)amp grid:(ccGridSize)gridSize duration:(ccTime)d;
 /** initializes the action with the number of jumps, the sin amplitude, the grid size and the duration */
--(id)initWithDuration:(ccTime)duration size:(CGSize)gridSize jumps:(NSUInteger)numberOfJumps amplitude:(float)amplitude;
+-(id)initWithJumps:(int)j amplitude:(float)amp grid:(ccGridSize)gridSize duration:(ccTime)d;
 
 @end
 
@@ -193,13 +185,13 @@
 /** CCSplitRows action */
 @interface CCSplitRows : CCTiledGrid3DAction
 {
-	NSUInteger	_rows;
-	CGSize	_winSize;
+	int		rows;
+	CGSize	winSize;
 }
 /** creates the action with the number of rows to split and the duration */
-+(id)actionWithDuration:(ccTime)duration rows:(NSUInteger)rows;
++(id)actionWithRows:(int)rows duration:(ccTime)duration;
 /** initializes the action with the number of rows to split and the duration */
--(id)initWithDuration:(ccTime)duration rows:(NSUInteger)rows;
+-(id)initWithRows:(int)rows duration:(ccTime)duration;
 
 @end
 
@@ -208,12 +200,12 @@
 /** CCSplitCols action */
 @interface CCSplitCols : CCTiledGrid3DAction
 {
-	NSUInteger	_cols;
-	CGSize	_winSize;
+	int		cols;
+	CGSize	winSize;
 }
 /** creates the action with the number of columns to split and the duration */
-+(id)actionWithDuration:(ccTime)duration cols:(NSUInteger)cols;
++(id)actionWithCols:(int)cols duration:(ccTime)duration;
 /** initializes the action with the number of columns to split and the duration */
--(id)initWithDuration:(ccTime)duration cols:(NSUInteger)cols;
+-(id)initWithCols:(int)cols duration:(ccTime)duration;
 
 @end

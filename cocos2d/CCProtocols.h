@@ -34,31 +34,22 @@
 
 /// CC RGBA protocol
 @protocol CCRGBAProtocol <NSObject>
-/** sets and returns the color (tint)
+/** sets Color
  @since v0.8
  */
-@property (nonatomic) ccColor3B color;
-/** returns the displayed color */
-@property (nonatomic, readonly) ccColor3B displayedColor;
-/** whether or not color should be propagated to its children */
-@property (nonatomic, getter = isCascadeColorEnabled) BOOL cascadeColorEnabled;
+-(void) setColor:(ccColor3B)color;
+/** returns the color
+ @since v0.8
+ */
+-(ccColor3B) color;
 
-/** recursive method that updates display color */
-- (void)updateDisplayedColor:(ccColor3B)color;
-
-/** sets and returns the opacity.
+/// returns the opacity
+-(GLubyte) opacity;
+/** sets the opacity.
  @warning If the the texture has premultiplied alpha then, the R, G and B channels will be modified.
  Values goes from 0 to 255, where 255 means fully opaque.
  */
-@property (nonatomic) GLubyte opacity;
-/** returns the displayed opacity */
-@property (nonatomic, readonly) GLubyte displayedOpacity;
-/** whether or not opacity should be propagated to its children */
-@property (nonatomic, getter = isCascadeOpacityEnabled) BOOL cascadeOpacityEnabled;
-
-/** recursive method that updates the displayed opacity */
-- (void)updateDisplayedOpacity:(GLubyte)opacity;
-
+-(void) setOpacity: (GLubyte) opacity;
 @optional
 /** sets the premultipliedAlphaOpacity property.
  If set to NO then opacity will be applied as: glColor(R,G,B,opacity);
@@ -133,9 +124,6 @@
 #ifdef __CC_PLATFORM_IOS
 /** Returns a Boolean value indicating whether the CCDirector supports the specified orientation. Default value is YES (supports all possible orientations) */
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-
-// Commented. See issue #1453 for further info: http://code.google.com/p/cocos2d-iphone/issues/detail?id=1453
-//- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
 
 /** Called when projection is resized (due to layoutSubviews on the view). This is important to respond to in order to setup your scene with the proper dimensions (which only exist after the first call to layoutSubviews) so that you can set your scene as early as possible to avoid startup flicker
  */

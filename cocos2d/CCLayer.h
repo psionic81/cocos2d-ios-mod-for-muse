@@ -56,11 +56,11 @@ typedef enum {
 #ifdef __CC_PLATFORM_IOS
 @interface CCLayer : CCNode <CCAccelerometerDelegate, CCTouchAllAtOnceDelegate, CCTouchOneByOneDelegate>
 {
-	BOOL _touchEnabled;
-	NSInteger _touchPriority;
-	BOOL _touchMode;
+	BOOL touchEnabled_;
+	BOOL touchPriority_;
+	BOOL touchMode_;
 	
-	BOOL _accelerometerEnabled;
+	BOOL accelerometerEnabled_;
 }
 
 /** whether or not it will receive Accelerometer events
@@ -95,18 +95,18 @@ typedef enum {
 
 @interface CCLayer : CCNode <CCKeyboardEventDelegate, CCMouseEventDelegate, CCTouchEventDelegate, CCGestureEventDelegate>
 {
-	BOOL		_mouseEnabled;
-	NSInteger	_mousePriority;
+	BOOL		mouseEnabled_;
+	NSInteger	mousePriority_;
 
-	BOOL		_keyboardEnabled;
-	NSInteger	_keyboardPriority;
+	BOOL		keyboardEnabled_;
+	NSInteger	keyboardPriority_;
 
-	BOOL		_touchEnabled;
-	NSInteger	_touchPriority;
-	NSInteger	_touchMode;
+	BOOL		touchEnabled_;
+	NSInteger	touchPriority_;
+	NSInteger	touchMode_;
     
-	BOOL		_gestureEnabled;
-	NSInteger	_gesturePriority;
+	BOOL		gestureEnabled_;
+	NSInteger	gesturePriority_;
 }
 
 /** whether or not it will receive touche events. */
@@ -136,33 +136,13 @@ typedef enum {
 /** Priority of keyboard events. Default is 0 */
 @property (nonatomic, assign) NSInteger keyboardPriority;
 
+
+
+
 #endif // mac
 
+
 @end
-
-
-#pragma mark -
-#pragma mark CCLayerRGBA
-
-/** CCLayerRGBA is a subclass of CCLayer that implements the CCRGBAProtocol protocol using a solid color as the background.
-
- All features from CCLayer are valid, plus the following new features that propagate into children that conform to the CCRGBAProtocol:
- - opacity
- - RGB colors
- @since 2.1
- */
-@interface CCLayerRGBA : CCLayer <CCRGBAProtocol>
-{
-	GLubyte		_displayedOpacity, _realOpacity;
-	ccColor3B	_displayedColor, _realColor;
-	BOOL		_cascadeOpacityEnabled, _cascadeColorEnabled;
-}
-
-// XXX: To make BridgeSupport happy
--(GLubyte) opacity;
-@end
-
-
 
 #pragma mark -
 #pragma mark CCLayerColor
@@ -173,12 +153,14 @@ typedef enum {
  - opacity
  - RGB colors
  */
-@interface CCLayerColor : CCLayerRGBA <CCBlendProtocol>
+@interface CCLayerColor : CCLayer <CCRGBAProtocol, CCBlendProtocol>
 {
-	ccVertex2F	_squareVertices[4];
-	ccColor4F	_squareColors[4];
+	GLubyte		opacity_;
+	ccColor3B	color_;
+	ccVertex2F	squareVertices_[4];
+	ccColor4F	squareColors_[4];
 
-	ccBlendFunc	_blendFunc;
+	ccBlendFunc	blendFunc_;
 }
 
 /** creates a CCLayer with color, width and height in Points*/
@@ -202,6 +184,10 @@ typedef enum {
  */
 -(void) changeWidth:(GLfloat)w height:(GLfloat)h;
 
+/** Opacity: conforms to CCRGBAProtocol protocol */
+@property (nonatomic,readonly) GLubyte opacity;
+/** Opacity: conforms to CCRGBAProtocol protocol */
+@property (nonatomic,readonly) ccColor3B color;
 /** BlendFunction. Conforms to CCBlendProtocol protocol */
 @property (nonatomic,readwrite) ccBlendFunc blendFunc;
 @end
@@ -231,11 +217,11 @@ the background.
  */
 @interface CCLayerGradient : CCLayerColor
 {
-	ccColor3B _endColor;
-	GLubyte _startOpacity;
-	GLubyte _endOpacity;
-	CGPoint _vector;
-	BOOL	_compressedInterpolation;
+	ccColor3B endColor_;
+	GLubyte startOpacity_;
+	GLubyte endOpacity_;
+	CGPoint vector_;
+	BOOL	compressedInterpolation_;
 }
 
 /** Creates a full-screen CCLayer with a gradient between start and end. */
@@ -275,20 +261,12 @@ the background.
  */
 @interface CCLayerMultiplex : CCLayer
 {
-	unsigned int _enabledLayer;
-	NSMutableArray *_layers;
+	unsigned int enabledLayer_;
+	NSMutableArray *layers_;
 }
 
-/** creates a CCMultiplexLayer with an array of layers.
- @since v2.1
- */
-+(id) layerWithArray:(NSArray*)arrayOfLayers;
 /** creates a CCMultiplexLayer with one or more layers using a variable argument list. */
 +(id) layerWithLayers: (CCLayer*) layer, ... NS_REQUIRES_NIL_TERMINATION;
-/** initializes a CCMultiplexLayer with an array of layers
- @since v2.1
- */
--(id) initWithArray:(NSArray*)arrayOfLayers;
 /** initializes a MultiplexLayer with one or more layers using a variable argument list. */
 -(id) initWithLayers: (CCLayer*) layer vaList:(va_list) params;
 /** switches to a certain layer indexed by n.

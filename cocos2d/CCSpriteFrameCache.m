@@ -54,34 +54,34 @@
 
 #pragma mark CCSpriteFrameCache - Alloc, Init & Dealloc
 
-static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
+static CCSpriteFrameCache *sharedSpriteFrameCache_=nil;
 
 + (CCSpriteFrameCache *)sharedSpriteFrameCache
 {
-	if (!_sharedSpriteFrameCache)
-		_sharedSpriteFrameCache = [[CCSpriteFrameCache alloc] init];
+	if (!sharedSpriteFrameCache_)
+		sharedSpriteFrameCache_ = [[CCSpriteFrameCache alloc] init];
 
-	return _sharedSpriteFrameCache;
+	return sharedSpriteFrameCache_;
 }
 
 +(id)alloc
 {
-	NSAssert(_sharedSpriteFrameCache == nil, @"Attempted to allocate a second instance of a singleton.");
+	NSAssert(sharedSpriteFrameCache_ == nil, @"Attempted to allocate a second instance of a singleton.");
 	return [super alloc];
 }
 
 +(void)purgeSharedSpriteFrameCache
 {
-	[_sharedSpriteFrameCache release];
-	_sharedSpriteFrameCache = nil;
+	[sharedSpriteFrameCache_ release];
+	sharedSpriteFrameCache_ = nil;
 }
 
 -(id) init
 {
 	if( (self=[super init]) ) {
-		_spriteFrames = [[NSMutableDictionary alloc] initWithCapacity: 100];
-		_spriteFramesAliases = [[NSMutableDictionary alloc] initWithCapacity:10];
-		_loadedFilenames = [[NSMutableSet alloc] initWithCapacity:30];
+		spriteFrames_ = [[NSMutableDictionary alloc] initWithCapacity: 100];
+		spriteFramesAliases_ = [[NSMutableDictionary alloc] initWithCapacity:10];
+		loadedFilenames_ = [[NSMutableSet alloc] initWithCapacity:30];
 	}
 
 	return self;
@@ -89,16 +89,16 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 
 - (NSString*) description
 {
-	return [NSString stringWithFormat:@"<%@ = %p | num of sprite frames =  %lu>", [self class], self, (unsigned long)[_spriteFrames count]];
+	return [NSString stringWithFormat:@"<%@ = %p | num of sprite frames =  %lu>", [self class], self, (unsigned long)[spriteFrames_ count]];
 }
 
 -(void) dealloc
 {
 	CCLOGINFO(@"cocos2d: deallocing %@", self);
 
-	[_spriteFrames release];
-	[_spriteFramesAliases release];
-	[_loadedFilenames release];
+	[spriteFrames_ release];
+	[spriteFramesAliases_ release];
+	[loadedFilenames_ release];
 	 
 	[super dealloc];
 }
@@ -185,10 +185,10 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 			// get aliases
 			NSArray *aliases = [frameDict objectForKey:@"aliases"];
 			for(NSString *alias in aliases) {
-				if( [_spriteFramesAliases objectForKey:alias] )
+				if( [spriteFramesAliases_ objectForKey:alias] )
 					CCLOGWARN(@"cocos2d: WARNING: an alias with name %@ already exists",alias);
 
-				[_spriteFramesAliases setObject:frameDictKey forKey:alias];
+				[spriteFramesAliases_ setObject:frameDictKey forKey:alias];
 			}
 
 			// set frame info
@@ -220,7 +220,7 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 		}
 
 		// add sprite frame
-		[_spriteFrames setObject:spriteFrame forKey:frameDictKey];
+		[spriteFrames_ setObject:spriteFrame forKey:frameDictKey];
 		[spriteFrame release];
 	}
 }
@@ -240,14 +240,14 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 	NSAssert(textureReference, @"textureReference should not be nil");
 	NSAssert(plist, @"plist filename should not be nil");
 	
-	if( ! [_loadedFilenames member:plist] ) {
+	if( ! [loadedFilenames_ member:plist] ) {
 
-		NSString *path = [[CCFileUtils sharedFileUtils] fullPathForFilename:plist];
+		NSString *path = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:plist];
 		NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];
 
 		[self addSpriteFramesWithDictionary:dict textureReference:textureReference];
 		
-		[_loadedFilenames addObject:plist];
+		[loadedFilenames_ addObject:plist];
 	}
 	else
 		CCLOGINFO(@"cocos2d: CCSpriteFrameCache: file already loaded: %@", plist);
@@ -268,9 +268,9 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 {
 	NSAssert(plist, @"plist filename should not be nil");
 	
-	if( ! [_loadedFilenames member:plist] ) {
+	if( ! [loadedFilenames_ member:plist] ) {
 
-		NSString *path = [[CCFileUtils sharedFileUtils] fullPathForFilename:plist];
+		NSString *path = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:plist];
 		NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];
 
 		NSString *texturePath = nil;
@@ -295,7 +295,7 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 
 		[self addSpriteFramesWithDictionary:dict textureFilename:texturePath];
 		
-		[_loadedFilenames addObject:plist];
+		[loadedFilenames_ addObject:plist];
 	}
 	else 
 		CCLOGINFO(@"cocos2d: CCSpriteFrameCache: file already loaded: %@", plist);
@@ -304,34 +304,34 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 
 -(void) addSpriteFrame:(CCSpriteFrame*)frame name:(NSString*)frameName
 {
-	[_spriteFrames setObject:frame forKey:frameName];
+	[spriteFrames_ setObject:frame forKey:frameName];
 }
 
 #pragma mark CCSpriteFrameCache - removing
 
 -(void) removeSpriteFrames
 {
-	[_spriteFrames removeAllObjects];
-	[_spriteFramesAliases removeAllObjects];
-	[_loadedFilenames removeAllObjects];
+	[spriteFrames_ removeAllObjects];
+	[spriteFramesAliases_ removeAllObjects];
+	[loadedFilenames_ removeAllObjects];
 }
 
 -(void) removeUnusedSpriteFrames
 {
 	BOOL removed_ = NO;
-	NSArray *keys = [_spriteFrames allKeys];
+	NSArray *keys = [spriteFrames_ allKeys];
 	for( id key in keys ) {
-		id value = [_spriteFrames objectForKey:key];
+		id value = [spriteFrames_ objectForKey:key];
 		if( [value retainCount] == 1 ) {
 			CCLOG(@"cocos2d: CCSpriteFrameCache: removing unused frame: %@", key);
-			[_spriteFrames removeObjectForKey:key];
+			[spriteFrames_ removeObjectForKey:key];
 			removed_ = YES;
 		}
 	}
 	
 	// XXX. Since we don't know the .plist file that originated the frame, we must remove all .plist from the cache
 	if( removed_ )
-		[_loadedFilenames removeAllObjects];
+		[loadedFilenames_ removeAllObjects];
 }
 
 -(void) removeSpriteFrameByName:(NSString*)name
@@ -341,30 +341,30 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 		return;
 
 	// Is this an alias ?
-	NSString *key = [_spriteFramesAliases objectForKey:name];
+	NSString *key = [spriteFramesAliases_ objectForKey:name];
 
 	if( key ) {
-		[_spriteFrames removeObjectForKey:key];
-		[_spriteFramesAliases removeObjectForKey:name];
+		[spriteFrames_ removeObjectForKey:key];
+		[spriteFramesAliases_ removeObjectForKey:name];
 
 	} else
-		[_spriteFrames removeObjectForKey:name];
+		[spriteFrames_ removeObjectForKey:name];
 	
 	// XXX. Since we don't know the .plist file that originated the frame, we must remove all .plist from the cache
-	[_loadedFilenames removeAllObjects];
+	[loadedFilenames_ removeAllObjects];
 }
 
 - (void) removeSpriteFramesFromFile:(NSString*) plist
 {
-	NSString *path = [[CCFileUtils sharedFileUtils] fullPathForFilename:plist];
+	NSString *path = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:plist];
 	NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];
 
 	[self removeSpriteFramesFromDictionary:dict];
 	
 	// remove it from the cache
-	id ret = [_loadedFilenames member:plist];
+	id ret = [loadedFilenames_ member:plist];
 	if( ret )
-		[_loadedFilenames removeObject:ret];
+		[loadedFilenames_ removeObject:ret];
 }
 
 - (void) removeSpriteFramesFromDictionary:(NSDictionary*) dictionary
@@ -374,34 +374,34 @@ static CCSpriteFrameCache *_sharedSpriteFrameCache=nil;
 
 	for(NSString *frameDictKey in framesDict)
 	{
-		if ([_spriteFrames objectForKey:frameDictKey]!=nil)
+		if ([spriteFrames_ objectForKey:frameDictKey]!=nil)
 			[keysToRemove addObject:frameDictKey];
 	}
-	[_spriteFrames removeObjectsForKeys:keysToRemove];
+	[spriteFrames_ removeObjectsForKeys:keysToRemove];
 }
 
 - (void) removeSpriteFramesFromTexture:(CCTexture2D*) texture
 {
 	NSMutableArray *keysToRemove=[NSMutableArray array];
 
-	for (NSString *spriteFrameKey in _spriteFrames)
+	for (NSString *spriteFrameKey in spriteFrames_)
 	{
-		if ([[_spriteFrames valueForKey:spriteFrameKey] texture] == texture)
+		if ([[spriteFrames_ valueForKey:spriteFrameKey] texture] == texture)
 			[keysToRemove addObject:spriteFrameKey];
 
 	}
-	[_spriteFrames removeObjectsForKeys:keysToRemove];
+	[spriteFrames_ removeObjectsForKeys:keysToRemove];
 }
 
 #pragma mark CCSpriteFrameCache - getting
 
 -(CCSpriteFrame*) spriteFrameByName:(NSString*)name
 {
-	CCSpriteFrame *frame = [_spriteFrames objectForKey:name];
+	CCSpriteFrame *frame = [spriteFrames_ objectForKey:name];
 	if( ! frame ) {
 		// try alias dictionary
-		NSString *key = [_spriteFramesAliases objectForKey:name];
-		frame = [_spriteFrames objectForKey:key];
+		NSString *key = [spriteFramesAliases_ objectForKey:name];
+		frame = [spriteFrames_ objectForKey:key];
 
 		if( ! frame )
 			CCLOG(@"cocos2d: CCSpriteFrameCache: Frame '%@' not found", name);

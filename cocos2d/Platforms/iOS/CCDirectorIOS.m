@@ -43,14 +43,11 @@
 #import "../../CCGLProgram.h"
 #import "../../ccGLStateCache.h"
 #import "../../CCLayer.h"
-#import "../../ccFPSImages.h"
-#import "../../CCConfiguration.h"
 
 // support imports
 #import "../../Support/OpenGL_Internal.h"
 #import "../../Support/CGPointExtension.h"
 #import "../../Support/TransformUtils.h"
-#import "../../Support/CCFileUtils.h"
 
 #import "kazmath/kazmath.h"
 #import "kazmath/GL/matrix.h"
@@ -114,12 +111,12 @@ CGFloat	__ccContentScaleFactor = 1;
 	if( (self=[super init]) ) {
 
 		__ccContentScaleFactor = 1;
-		_isContentScaleSupported = NO;
+		isContentScaleSupported_ = NO;
 
-		_touchDispatcher = [[CCTouchDispatcher alloc] init];
+		touchDispatcher_ = [[CCTouchDispatcher alloc] init];
 
 		// running thread is main thread on iOS
-		_runningThread = [NSThread currentThread];
+		runningThread_ = [NSThread currentThread];
 		
 		// Apparently it comes with a default view, and we don't want it
 //		[self setView:nil];
@@ -130,7 +127,7 @@ CGFloat	__ccContentScaleFactor = 1;
 
 - (void) dealloc
 {
-	[_touchDispatcher release];
+	[touchDispatcher_ release];
 
 	[super dealloc];
 }
@@ -148,47 +145,41 @@ CGFloat	__ccContentScaleFactor = 1;
 	[EAGLContext setCurrentContext: [openGLview context]];
 
 	/* tick before glClear: issue #533 */
-	if( ! _isPaused )
-		[_scheduler update: _dt];
+	if( ! isPaused_ )
+		[scheduler_ update: dt];
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* to avoid flickr, nextScene MUST be here: after tick and before draw.
 	 XXX: Which bug is this one. It seems that it can't be reproduced with v0.9 */
-	if( _nextScene )
+	if( nextScene_ )
 		[self setNextScene];
 
 	kmGLPushMatrix();
 
-	[_runningScene visit];
+	[runningScene_ visit];
 
-	[_notificationNode visit];
+	[notificationNode_ visit];
 
-	if( _displayStats )
+	if( displayStats_ )
 		[self showStats];
 
 	kmGLPopMatrix();
 
-	_totalFrames++;
+	totalFrames_++;
 
 	[openGLview swapBuffers];
 
-	if( _displayStats )
+	if( displayStats_ )
 		[self calculateMPF];
-}
-
--(void) setViewport
-{
-	CGSize size = _winSizeInPixels;
-	glViewport(0, 0, size.width, size.height );
 }
 
 -(void) setProjection:(ccDirectorProjection)projection
 {
-	CGSize size = _winSizeInPixels;
-	CGSize sizePoint = _winSizeInPoints;
-    
-	[self setViewport];
+	CGSize size = winSizeInPixels_;
+	CGSize sizePoint = winSizeInPoints_;
+
+	glViewport(0, 0, size.width, size.height );
 
 	switch (projection) {
 		case kCCDirectorProjection2D:
@@ -231,8 +222,8 @@ CGFloat	__ccContentScaleFactor = 1;
 		}
 
 		case kCCDirectorProjectionCustom:
-			if( [_delegate respondsToSelector:@selector(updateProjection)] )
-				[_delegate updateProjection];
+			if( [delegate_ respondsToSelector:@selector(updateProjection)] )
+				[delegate_ updateProjection];
 			break;
 
 		default:
@@ -240,7 +231,7 @@ CGFloat	__ccContentScaleFactor = 1;
 			break;
 	}
 
-	_projection = projection;
+	projection_ = projection;
 
 	ccSetProjectionMatrixDirty();
 }
@@ -249,7 +240,7 @@ CGFloat	__ccContentScaleFactor = 1;
 - (void)runWithScene:(CCScene*) scene
 {
 	NSAssert( scene != nil, @"Argument must be non-nil");
-	NSAssert(_runningScene == nil, @"This command can only be used to start the CCDirector. There is already a scene present.");
+	NSAssert(runningScene_ == nil, @"This command can only be used to start the CCDirector. There is already a scene present.");
 	
 	[self pushScene:scene];
 
@@ -261,14 +252,14 @@ CGFloat	__ccContentScaleFactor = 1;
 
 -(CCTouchDispatcher*) touchDispatcher
 {
-	return _touchDispatcher;
+	return touchDispatcher_;
 }
 
 -(void) setTouchDispatcher:(CCTouchDispatcher*)touchDispatcher
 {
-	if( touchDispatcher != _touchDispatcher ) {
-		[_touchDispatcher release];
-		_touchDispatcher = [touchDispatcher retain];
+	if( touchDispatcher != touchDispatcher_ ) {
+		[touchDispatcher_ release];
+		touchDispatcher_ = [touchDispatcher retain];
 	}
 }
 
@@ -284,22 +275,22 @@ CGFloat	__ccContentScaleFactor = 1;
 	if( scaleFactor != __ccContentScaleFactor ) {
 
 		__ccContentScaleFactor = scaleFactor;
-		_winSizeInPixels = CGSizeMake( _winSizeInPoints.width * scaleFactor, _winSizeInPoints.height * scaleFactor );
+		winSizeInPixels_ = CGSizeMake( winSizeInPoints_.width * scaleFactor, winSizeInPoints_.height * scaleFactor );
 
-		if( __view )
+		if( view_ )
 			[self updateContentScaleFactor];
 
 		// update projection
-		[self setProjection:_projection];
+		[self setProjection:projection_];
 	}
 }
 
 -(void) updateContentScaleFactor
 {
-	NSAssert( [__view respondsToSelector:@selector(setContentScaleFactor:)], @"cocos2d v2.0+ runs on iOS 4 or later");
+	NSAssert( [view_ respondsToSelector:@selector(setContentScaleFactor:)], @"cocos2d v2.0+ runs on iOS 4 or later");
 
-	[__view setContentScaleFactor: __ccContentScaleFactor];
-	_isContentScaleSupported = YES;
+	[view_ setContentScaleFactor: __ccContentScaleFactor];
+	isContentScaleSupported_ = YES;
 }
 
 -(BOOL) enableRetinaDisplay:(BOOL)enabled
@@ -313,7 +304,7 @@ CGFloat	__ccContentScaleFactor = 1;
 		return YES;
 
 	// setContentScaleFactor is not supported
-	if (! [__view respondsToSelector:@selector(setContentScaleFactor:)])
+	if (! [view_ respondsToSelector:@selector(setContentScaleFactor:)])
 		return NO;
 
 	// SD device
@@ -324,7 +315,6 @@ CGFloat	__ccContentScaleFactor = 1;
 	[self setContentScaleFactor:newScale];
 
 	// Load Hi-Res FPS label
-	[[CCFileUtils sharedFileUtils] buildSearchResolutionsOrder];
 	[self createStatsLabel];
 
 	return YES;
@@ -333,13 +323,13 @@ CGFloat	__ccContentScaleFactor = 1;
 // overriden, don't call super
 -(void) reshapeProjection:(CGSize)size
 {
-	_winSizeInPoints = [__view bounds].size;
-	_winSizeInPixels = CGSizeMake(_winSizeInPoints.width * __ccContentScaleFactor, _winSizeInPoints.height *__ccContentScaleFactor);
+	winSizeInPoints_ = [view_ bounds].size;
+	winSizeInPixels_ = CGSizeMake(winSizeInPoints_.width * __ccContentScaleFactor, winSizeInPoints_.height *__ccContentScaleFactor);
 
-	[self setProjection:_projection];
+	[self setProjection:projection_];
   
-	if( [_delegate respondsToSelector:@selector(directorDidReshapeProjection:)] )
-		[_delegate directorDidReshapeProjection:self];
+	if( [delegate_ respondsToSelector:@selector(directorDidReshapeProjection:)] )
+		[delegate_ directorDidReshapeProjection:self];
 }
 
 static void
@@ -367,7 +357,7 @@ GLToClipTransform(kmMat4 *transformOut)
 	// Calculate z=0 using -> transform*[0, 0, 0, 1]/w
 	kmScalar zClip = transform.mat[14]/transform.mat[15];
 	
-	CGSize glSize = __view.bounds.size;
+	CGSize glSize = view_.bounds.size;
 	kmVec3 clipCoord = {2.0*uiPoint.x/glSize.width - 1.0, 1.0 - 2.0*uiPoint.y/glSize.height, zClip};
 	
 	kmVec3 glCoord;
@@ -394,7 +384,7 @@ GLToClipTransform(kmMat4 *transformOut)
 	kmVec3 glCoord = {glPoint.x, glPoint.y, 0.0};
 	kmVec3TransformCoord(&clipCoord, &glCoord, &transform);
 	
-	CGSize glSize = __view.bounds.size;
+	CGSize glSize = view_.bounds.size;
 	return ccp(glSize.width*(clipCoord.x*0.5 + 0.5), glSize.height*(-clipCoord.y*0.5 + 0.5));
 }
 
@@ -402,7 +392,7 @@ GLToClipTransform(kmMat4 *transformOut)
 {
 	// don't release the event handlers
 	// They are needed in case the director is run again
-	[_touchDispatcher removeAllDelegates];
+	[touchDispatcher_ removeAllDelegates];
 
 	[super end];
 }
@@ -412,18 +402,18 @@ GLToClipTransform(kmMat4 *transformOut)
 
 -(void) setView:(CCGLView *)view
 {
-	if( view != __view) {
+	if( view != view_) {
 		[super setView:view];
 
 		if( view ) {
 			// set size
-			_winSizeInPixels = CGSizeMake(_winSizeInPoints.width * __ccContentScaleFactor, _winSizeInPoints.height *__ccContentScaleFactor);
+			winSizeInPixels_ = CGSizeMake(winSizeInPoints_.width * __ccContentScaleFactor, winSizeInPoints_.height *__ccContentScaleFactor);
 
 			if( __ccContentScaleFactor != 1 )
 				[self updateContentScaleFactor];
 
-			[view setTouchDelegate: _touchDispatcher];
-			[_touchDispatcher setDispatchEvents: YES];
+			[view setTouchDelegate: touchDispatcher_];
+			[touchDispatcher_ setDispatchEvents: YES];
 		}
 	}
 }
@@ -432,18 +422,16 @@ GLToClipTransform(kmMat4 *transformOut)
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
 	BOOL ret =YES;
-	if( [_delegate respondsToSelector:_cmd] )
-		ret = (BOOL) [_delegate shouldAutorotateToInterfaceOrientation:interfaceOrientation];
+	if( [delegate_ respondsToSelector:_cmd] )
+		ret = (BOOL) [delegate_ shouldAutorotateToInterfaceOrientation:interfaceOrientation];
 
 	return ret;
 }
 
-// Commented. See issue #1453 for further info: http://code.google.com/p/cocos2d-iphone/issues/detail?id=1453
-//-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
-//{
-//	if( [_delegate respondsToSelector:_cmd] )
-//		[_delegate willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-//}
+-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+	// do something ?
+}
 
 
 -(void) viewWillAppear:(BOOL)animated
@@ -497,27 +485,6 @@ GLToClipTransform(kmMat4 *transformOut)
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
 }
-
-#pragma mark helper
-
--(void)getFPSImageData:(unsigned char**)datapointer length:(NSUInteger*)len
-{
-	int device = [[CCConfiguration sharedConfiguration] runningDevice];
-
-	if( device == kCCDeviceiPadRetinaDisplay) {
-		*datapointer = cc_fps_images_ipadhd_png;
-		*len = cc_fps_images_ipadhd_len();
-		
-	} else if( device == kCCDeviceiPhoneRetinaDisplay || device == kCCDeviceiPhone5RetinaDisplay ) {
-		*datapointer = cc_fps_images_hd_png;
-		*len = cc_fps_images_hd_len();
-
-	} else {
-		*datapointer = cc_fps_images_png;
-		*len = cc_fps_images_len();
-	}
-}
-
 @end
 
 
@@ -534,8 +501,8 @@ GLToClipTransform(kmMat4 *transformOut)
 
 - (void)setAnimationInterval:(NSTimeInterval)interval
 {
-	_animationInterval = interval;
-	if(_displayLink){
+	animationInterval_ = interval;
+	if(displayLink_){
 		[self stopAnimation];
 		[self startAnimation];
 	}
@@ -543,75 +510,73 @@ GLToClipTransform(kmMat4 *transformOut)
 
 - (void) startAnimation
 {
-	[super startAnimation];
-
-    if(_isAnimating)
+    if(isAnimating_)
         return;
 
-	gettimeofday( &_lastUpdate, NULL);
+	gettimeofday( &lastUpdate_, NULL);
 
 	// approximate frame rate
 	// assumes device refreshes at 60 fps
-	int frameInterval = (int) floor(_animationInterval * 60.0f);
+	int frameInterval = (int) floor(animationInterval_ * 60.0f);
 
 	CCLOG(@"cocos2d: animation started with frame interval: %.2f", 60.0f/frameInterval);
 
-	_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(mainLoop:)];
-	[_displayLink setFrameInterval:frameInterval];
+	displayLink_ = [CADisplayLink displayLinkWithTarget:self selector:@selector(mainLoop:)];
+	[displayLink_ setFrameInterval:frameInterval];
 
 #if CC_DIRECTOR_IOS_USE_BACKGROUND_THREAD
 	//
-	_runningThread = [[NSThread alloc] initWithTarget:self selector:@selector(threadMainLoop) object:nil];
-	[_runningThread start];
+	runningThread_ = [[NSThread alloc] initWithTarget:self selector:@selector(threadMainLoop) object:nil];
+	[runningThread_ start];
 
 #else
 	// setup DisplayLink in main thread
-	[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[displayLink_ addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 #endif
 
-    _isAnimating = YES;
+    isAnimating_ = YES;
 }
 
 - (void) stopAnimation
 {
-    if(!_isAnimating)
+    if(!isAnimating_)
         return;
 
 	CCLOG(@"cocos2d: animation stopped");
 
 #if CC_DIRECTOR_IOS_USE_BACKGROUND_THREAD
-	[_runningThread cancel];
-	[_runningThread release];
-	_runningThread = nil;
+	[runningThread_ cancel];
+	[runningThread_ release];
+	runningThread_ = nil;
 #endif
 
-	[_displayLink invalidate];
-	_displayLink = nil;
-    _isAnimating = NO;
+	[displayLink_ invalidate];
+	displayLink_ = nil;
+    isAnimating_ = NO;
 }
 
 // Overriden in order to use a more stable delta time
 -(void) calculateDeltaTime
 {
     // New delta time. Re-fixed issue #1277
-    if( _nextDeltaTimeZero || _lastDisplayTime==0 ) {
-        _dt = 0;
-        _nextDeltaTimeZero = NO;
+    if( nextDeltaTimeZero_ || lastDisplayTime_==0 ) {
+        dt = 0;
+        nextDeltaTimeZero_ = NO;
     } else {
-        _dt = _displayLink.timestamp - _lastDisplayTime;
-        _dt = MAX(0,_dt);
+        dt = displayLink_.timestamp - lastDisplayTime_;
+        dt = MAX(0,dt);
     }
     // Store this timestamp for next time
-    _lastDisplayTime = _displayLink.timestamp;
+    lastDisplayTime_ = displayLink_.timestamp;
 
 	// needed for SPF
-	if( _displayStats )
-		gettimeofday( &_lastUpdate, NULL);
+	if( displayStats_ )
+		gettimeofday( &lastUpdate_, NULL);
 
 #ifdef DEBUG
 	// If we are debugging our code, prevent big delta time
-	if( _dt > 0.2f )
-		_dt = 1/60.0f;
+	if( dt > 0.2f )
+		dt = 1/60.0f;
 #endif
 }
 
@@ -625,7 +590,7 @@ GLToClipTransform(kmMat4 *transformOut)
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[displayLink_ addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 
 	// start the run loop
 	[[NSRunLoop currentRunLoop] run];
@@ -635,7 +600,7 @@ GLToClipTransform(kmMat4 *transformOut)
 
 -(void) dealloc
 {
-	[_displayLink release];
+	[displayLink_ release];
 	[super dealloc];
 }
 @end

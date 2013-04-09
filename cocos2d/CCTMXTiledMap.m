@@ -47,11 +47,11 @@
 @end
 
 @implementation CCTMXTiledMap
-@synthesize mapSize = _mapSize;
-@synthesize tileSize = _tileSize;
-@synthesize mapOrientation = _mapOrientation;
-@synthesize objectGroups = _objectGroups;
-@synthesize properties = _properties;
+@synthesize mapSize = mapSize_;
+@synthesize tileSize = tileSize_;
+@synthesize mapOrientation = mapOrientation_;
+@synthesize objectGroups = objectGroups_;
+@synthesize properties = properties_;
 
 +(id) tiledMapWithTMXFile:(NSString*)tmxFile
 {
@@ -65,12 +65,12 @@
 
 -(void) buildWithMapInfo:(CCTMXMapInfo*)mapInfo
 {
-	_mapSize = mapInfo.mapSize;
-	_tileSize = mapInfo.tileSize;
-	_mapOrientation = mapInfo.orientation;
-	_objectGroups = [mapInfo.objectGroups retain];
-	_properties = [mapInfo.properties retain];
-	_tileProperties = [mapInfo.tileProperties retain];
+	mapSize_ = mapInfo.mapSize;
+	tileSize_ = mapInfo.tileSize;
+	mapOrientation_ = mapInfo.orientation;
+	objectGroups_ = [mapInfo.objectGroups retain];
+	properties_ = [mapInfo.properties retain];
+	tileProperties_ = [mapInfo.tileProperties retain];
 
 	int idx=0;
 
@@ -126,9 +126,9 @@
 
 -(void) dealloc
 {
-	[_objectGroups release];
-	[_properties release];
-	[_tileProperties release];
+	[objectGroups_ release];
+	[properties_ release];
+	[tileProperties_ release];
 	[super dealloc];
 }
 
@@ -185,7 +185,7 @@
 -(CCTMXLayer*) layerNamed:(NSString *)layerName
 {
 	CCTMXLayer *layer;
-	CCARRAY_FOREACH(_children, layer) {
+	CCARRAY_FOREACH(children_, layer) {
 		if([layer isKindOfClass:[CCTMXLayer class]])
 			if([layer.layerName isEqual:layerName])
 				return layer;
@@ -197,7 +197,7 @@
 
 -(CCTMXObjectGroup*) objectGroupNamed:(NSString *)groupName
 {
-	for( CCTMXObjectGroup *objectGroup in _objectGroups ) {
+	for( CCTMXObjectGroup *objectGroup in objectGroups_ ) {
 		if( [objectGroup.groupName isEqual:groupName] )
 			return objectGroup;
 	}
@@ -208,10 +208,10 @@
 
 -(id) propertyNamed:(NSString *)propertyName
 {
-	return [_properties valueForKey:propertyName];
+	return [properties_ valueForKey:propertyName];
 }
 -(NSDictionary*)propertiesForGID:(unsigned int)GID{
-	return [_tileProperties objectForKey:[NSNumber numberWithInt:GID]];
+	return [tileProperties_ objectForKey:[NSNumber numberWithInt:GID]];
 }
 @end
 

@@ -94,25 +94,25 @@ typedef struct _KerningHashElement
 @interface CCBMFontConfiguration : NSObject
 {
 	// Character Set defines the letters that actually exist in the font
-	NSCharacterSet *_characterSet;
+	NSCharacterSet *characterSet_;
   
 	// atlas name
-	NSString		*_atlasName;
+	NSString		*atlasName_;
     
     // XXX: Creating a public interface so that the bitmapFontArray[] is accessible
 @public
     
 	// BMFont definitions
-	tCCFontDefHashElement	*_fontDefDictionary;
+	tCCFontDefHashElement	*fontDefDictionary_;
     
 	// FNTConfig: Common Height. Should be signed (issue #1343)
-	NSInteger		_commonHeight;
+	NSInteger		commonHeight_;
     
 	// Padding
-	ccBMFontPadding	_padding;
+	ccBMFontPadding	padding_;
     
 	// values for kerning
-	tCCKerningHashElement	*_kerningDictionary;
+	tCCKerningHashElement	*kerningDictionary_;
 }
 
 // Character set
@@ -162,31 +162,30 @@ typedef struct _KerningHashElement
 @interface CCLabelBMFont : CCSpriteBatchNode <CCLabelProtocol, CCRGBAProtocol>
 {
 	// string to render
-	NSString		*_string;
+	NSString		*string_;
     
     // name of fntFile
-    NSString        *_fntFile;
+    NSString        *fntFile_;
     
     // initial string without line breaks
-    NSString *_initialString;
+    NSString *initialString_;
     // max width until a line break is added
-    float _width;
+    float width_;
     // alignment of all lines
-    CCTextAlignment _alignment;
+    CCTextAlignment alignment_;
     
-	CCBMFontConfiguration	*_configuration;
+	CCBMFontConfiguration	*configuration_;
     
 	// texture RGBA
-	GLubyte		_displayedOpacity, _realOpacity;
-	ccColor3B	_displayedColor, _realColor;
-	BOOL		_cascadeOpacityEnabled, _cascadeColorEnabled;
-	BOOL		_opacityModifyRGB;
+	GLubyte		opacity_;
+	ccColor3B	color_;
+	BOOL opacityModifyRGB_;
 	
 	// offset of the texture atlas
-	CGPoint			_imageOffset;
+	CGPoint			imageOffset_;
 	
 	// reused char
-	CCSprite		*_reusedChar;
+	CCSprite		*reusedChar_;
 }
 
 /** Purges the cached data.

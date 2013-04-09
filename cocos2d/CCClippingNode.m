@@ -49,13 +49,13 @@ static void setProgram(CCNode *n, CCGLProgram *p) {
 
 @implementation CCClippingNode
 
-@synthesize stencil = _stencil;
-@synthesize alphaThreshold = _alphaThreshold;
-@synthesize inverted = _inverted;
+@synthesize stencil = stencil_;
+@synthesize alphaThreshold = alphaThreshold_;
+@synthesize inverted = inverted_;
 
 - (void)dealloc
 {
-    [_stencil release];
+    [stencil_ release];
     [super dealloc];
 }
 
@@ -100,24 +100,24 @@ static void setProgram(CCNode *n, CCGLProgram *p) {
 - (void)onEnter
 {
     [super onEnter];
-    [_stencil onEnter];
+    [stencil_ onEnter];
 }
 
 - (void)onEnterTransitionDidFinish
 {
     [super onEnterTransitionDidFinish];
-    [_stencil onEnterTransitionDidFinish];
+    [stencil_ onEnterTransitionDidFinish];
 }
 
 - (void)onExitTransitionDidStart
 {
-    [_stencil onExitTransitionDidStart];
+    [stencil_ onExitTransitionDidStart];
     [super onExitTransitionDidStart];
 }
 
 - (void)onExit
 {
-    [_stencil onExit];
+    [stencil_ onExit];
     [super onExit];
 }
 
@@ -133,8 +133,8 @@ static void setProgram(CCNode *n, CCGLProgram *p) {
     // return fast (draw nothing, or draw everything if in inverted mode) if:
     // - nil stencil node
     // - or stencil node invisible:
-    if (!_stencil || !_stencil.visible) {
-        if (_inverted) {
+    if (!stencil_ || !stencil_.visible) {
+        if (inverted_) {
             // draw everything
             [super visit];
         }
@@ -215,47 +215,17 @@ static void setProgram(CCNode *n, CCGLProgram *p) {
     ///////////////////////////////////
     // CLEAR STENCIL BUFFER
     
+    // manually clear the stencil buffer by drawing a fullscreen rectangle on it
     // setup the stencil test func like this:
-    // for each pixel in the stencil buffer
+    // for each pixel in the fullscreen rectangle
     //     never draw it into the frame buffer
     //     if not in inverted mode: set the current layer value to 0 in the stencil buffer
     //     if in inverted mode: set the current layer value to 1 in the stencil buffer
-#if defined(__CC_PLATFORM_MAC)
-    // There is a bug in some ATI drivers where glStencilMask does not affect glClear.
-    // Draw a full screen rectangle to clear the stencil buffer.
     glStencilFunc(GL_NEVER, mask_layer, mask_layer);
-    glStencilOp(!_inverted ? GL_ZERO : GL_REPLACE, GL_KEEP, GL_KEEP);
-
-    int viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    int x = viewport[0];
-    int y = viewport[1];
-    int width = viewport[2];
-    int height = viewport[3];
-
-    kmGLMatrixMode(KM_GL_PROJECTION);
-    kmGLPushMatrix();
-    kmGLLoadIdentity();
-
-    kmMat4 orthoMatrix;
-    kmMat4OrthographicProjection(&orthoMatrix, x, width, y, height, -1, 1);
-    kmGLMultMatrix( &orthoMatrix );
-
-    kmGLMatrixMode(KM_GL_MODELVIEW);
-    kmGLPushMatrix();
-    kmGLLoadIdentity();
-
-    ccDrawSolidRect(ccp(x, y), ccp(width, height), ccc4f(1, 1, 1, 1));
-
-    kmGLMatrixMode(KM_GL_PROJECTION);
-    kmGLPopMatrix();
-    kmGLMatrixMode(KM_GL_MODELVIEW);
-    kmGLPopMatrix();
-#else
-    glClearStencil(!_inverted ? 0 : ~0);
-    glClear(GL_STENCIL_BUFFER_BIT);
-#endif
+    glStencilOp(!inverted_ ? GL_ZERO : GL_REPLACE, GL_KEEP, GL_KEEP);
+    
+    // draw a fullscreen solid rectangle to clear the stencil buffer
+    ccDrawSolidRect(CGPointZero, ccpFromSize([[CCDirector sharedDirector] winSize]), ccc4f(1, 1, 1, 1));
     
     ///////////////////////////////////
     // DRAW CLIPPING STENCIL
@@ -266,7 +236,7 @@ static void setProgram(CCNode *n, CCGLProgram *p) {
     //     if not in inverted mode: set the current layer value to 1 in the stencil buffer
     //     if in inverted mode: set the current layer value to 0 in the stencil buffer
     glStencilFunc(GL_NEVER, mask_layer, mask_layer);
-    glStencilOp(!_inverted ? GL_REPLACE : GL_ZERO, GL_KEEP, GL_KEEP);
+    glStencilOp(!inverted_ ? GL_REPLACE : GL_ZERO, GL_KEEP, GL_KEEP);
     
     // enable alpha test only if the alpha threshold < 1,
     // indeed if alpha threshold == 1, every pixel will be drawn anyways
@@ -275,17 +245,17 @@ static void setProgram(CCNode *n, CCGLProgram *p) {
     GLenum currentAlphaTestFunc = GL_ALWAYS;
     GLclampf currentAlphaTestRef = 1;
 #endif
-    if (_alphaThreshold < 1) {
+    if (alphaThreshold_ < 1) {
 #if defined(__CC_PLATFORM_IOS)
         // since glAlphaTest do not exists in OES, use a shader that writes
         // pixel only if greater than an alpha threshold
         CCGLProgram *program = [[CCShaderCache sharedShaderCache] programForKey:kCCShader_PositionTextureColorAlphaTest];
-        GLint alphaValueLocation = glGetUniformLocation(program.program, kCCUniformAlphaTestValue_s);
+        GLint alphaValueLocation = glGetUniformLocation(program->program_, kCCUniformAlphaTestValue);
         // set our alphaThreshold
-        [program setUniformLocation:alphaValueLocation withF1:_alphaThreshold];
+        [program setUniformLocation:alphaValueLocation withF1:alphaThreshold_];
         // we need to recursively apply this shader to all the nodes in the stencil node
         // XXX: we should have a way to apply shader to all nodes without having to do this
-        setProgram(_stencil, program);
+        setProgram(stencil_, program);
 #elif defined(__CC_PLATFORM_MAC)
         // manually save the alpha test state
         currentAlphaTestEnabled = glIsEnabled(GL_ALPHA_TEST);
@@ -296,7 +266,7 @@ static void setProgram(CCNode *n, CCGLProgram *p) {
         // check for OpenGL error while enabling alpha test
         CHECK_GL_ERROR_DEBUG();
         // pixel will be drawn only if greater than an alpha threshold
-        glAlphaFunc(GL_GREATER, _alphaThreshold);
+        glAlphaFunc(GL_GREATER, alphaThreshold_);
 #endif
     }
 
@@ -304,11 +274,11 @@ static void setProgram(CCNode *n, CCGLProgram *p) {
     // (according to the stencil test func/op and alpha (or alpha shader) test)
     kmGLPushMatrix();
     [self transform];
-    [_stencil visit];
+    [stencil_ visit];
     kmGLPopMatrix();
     
     // restore alpha test state
-    if (_alphaThreshold < 1) {
+    if (alphaThreshold_ < 1) {
 #if defined(__CC_PLATFORM_IOS)
         // XXX: we need to find a way to restore the shaders of the stencil node and its childs
 #elif defined(__CC_PLATFORM_MAC)

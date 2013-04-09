@@ -53,11 +53,11 @@
  */
 @interface CCSpriteBatchNode : CCNode <CCTextureProtocol>
 {
-	CCTextureAtlas	*_textureAtlas;
-	ccBlendFunc		_blendFunc;
+	CCTextureAtlas	*textureAtlas_;
+	ccBlendFunc		blendFunc_;
 
 	// all descendants: children, grandchildren, etc...
-	CCArray	*_descendants;
+	CCArray	*descendants_;
 }
 
 /** returns the TextureAtlas that is used */

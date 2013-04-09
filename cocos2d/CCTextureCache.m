@@ -80,7 +80,7 @@ static CCTextureCache *sharedTextureCache;
 -(id) init
 {
 	if( (self=[super init]) ) {
-		_textures = [[NSMutableDictionary dictionaryWithCapacity: 10] retain];
+		textures_ = [[NSMutableDictionary dictionaryWithCapacity: 10] retain];
 
 		// init "global" stuff
 		_loadingQueue = dispatch_queue_create("org.cocos2d.texturecacheloading", NULL);
@@ -116,8 +116,8 @@ static CCTextureCache *sharedTextureCache;
 		desc = [NSString stringWithFormat:@"<%@ = %p | num of textures =  %lu | keys: %@>",
 			[self class],
 			self,
-			(unsigned long)[_textures count],
-			[_textures allKeys]
+			(unsigned long)[textures_ count],
+			[textures_ allKeys]
 			];
 	});
 	return desc;
@@ -128,7 +128,7 @@ static CCTextureCache *sharedTextureCache;
 	CCLOGINFO(@"cocos2d: deallocing %@", self);
 
 	dispatch_sync(_dictQueue, ^{
-		[_textures release];
+		[textures_ release];
 	});
 	[_auxGLcontext release];
 	_auxGLcontext = nil;
@@ -147,15 +147,17 @@ static CCTextureCache *sharedTextureCache;
 	NSAssert(target != nil, @"TextureCache: target can't be nil");
 	NSAssert(selector != NULL, @"TextureCache: selector can't be NULL");
 
-	// remove possible -HD suffix to prevent caching the same image twice (issue #1040)
-	CCFileUtils *fileUtils = [CCFileUtils sharedFileUtils];
-	path = [fileUtils standarizePath:path];
+	path = [path stringByStandardizingPath];
 
 	// optimization
 	__block CCTexture2D * tex;
-		
+
+#ifdef __CC_PLATFORM_IOS
+	path = [[CCFileUtils sharedFileUtils] removeSuffixFromFile:path];
+#endif
+
 	dispatch_sync(_dictQueue, ^{
-		tex = [_textures objectForKey:path];
+		tex = [textures_ objectForKey:path];
 	});
 
 	if(tex) {
@@ -207,15 +209,17 @@ static CCTextureCache *sharedTextureCache;
 {
 	NSAssert(path != nil, @"TextureCache: fileimage MUST not be nil");
 
-	// remove possible -HD suffix to prevent caching the same image twice (issue #1040)
-	CCFileUtils *fileUtils = [CCFileUtils sharedFileUtils];
-	path = [fileUtils standarizePath:path];
+	path = [path stringByStandardizingPath];
 
 	// optimization
 	__block CCTexture2D * tex;
 
+#ifdef __CC_PLATFORM_IOS
+	path = [[CCFileUtils sharedFileUtils] removeSuffixFromFile:path];
+#endif
+
 	dispatch_sync(_dictQueue, ^{
-		tex = [_textures objectForKey:path];
+		tex = [textures_ objectForKey:path];
 	});
 
 	if(tex) {
@@ -267,30 +271,27 @@ static CCTextureCache *sharedTextureCache;
 
 -(CCTexture2D*) addImage: (NSString*) path
 {
-	NSAssert(path != nil, @"TextureCache: fileimage MUST not be nil");
+	NSAssert(path != nil, @"TextureCache: fileimage MUST not be nill");
 
-	// remove possible -HD suffix to prevent caching the same image twice (issue #1040)
-	CCFileUtils *fileUtils = [CCFileUtils sharedFileUtils];
-	path = [fileUtils standarizePath:path];
-
+	path = [path stringByStandardizingPath];
+	
 	__block CCTexture2D * tex = nil;
 
+	// remove possible -HD suffix to prevent caching the same image twice (issue #1040)
+#ifdef __CC_PLATFORM_IOS
+	path = [[CCFileUtils sharedFileUtils] removeSuffixFromFile: path];
+#endif
+
 	dispatch_sync(_dictQueue, ^{
-		tex = [_textures objectForKey: path];
+		tex = [textures_ objectForKey: path];
 	});
 
 	if( ! tex ) {
 
-		ccResolutionType resolution;
-		NSString *fullpath = [fileUtils fullPathForFilename:path resolutionType:&resolution];
-		if( ! fullpath ) {
-			CCLOG(@"cocos2d: Couldn't find file:%@", path);
-			return nil;
-		}
-
-		NSString *lowerCase = [fullpath lowercaseString];
+		NSString *lowerCase = [path lowercaseString];
 
 		// all images are handled by UIKit/AppKit except PVR extension that is handled by cocos2d's handler
+
 
 		if ( [lowerCase hasSuffix:@".pvr"] || [lowerCase hasSuffix:@".pvr.gz"] || [lowerCase hasSuffix:@".pvr.ccz"] )
 			tex = [self addPVRImage:path];
@@ -298,6 +299,8 @@ static CCTextureCache *sharedTextureCache;
 #ifdef __CC_PLATFORM_IOS
 
 		else {
+			ccResolutionType resolution;
+			NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:path resolutionType:&resolution];
 
 			UIImage *image = [[UIImage alloc] initWithContentsOfFile:fullpath];
 			tex = [[CCTexture2D alloc] initWithCGImage:image.CGImage resolutionType:resolution];
@@ -305,10 +308,10 @@ static CCTextureCache *sharedTextureCache;
 
 			if( tex ){
 				dispatch_sync(_dictQueue, ^{
-					[_textures setObject: tex forKey:path];
+					[textures_ setObject: tex forKey:path];
 				});
 			}else{
-				CCLOG(@"cocos2d: Couldn't create texture for file:%@ in CCTextureCache", path);
+				CCLOG(@"cocos2d: Couldn't add image:%@ in CCTextureCache", path);
 			}
 
 			// autorelease prevents possible crash in multithreaded environments
@@ -318,6 +321,8 @@ static CCTextureCache *sharedTextureCache;
 
 #elif defined(__CC_PLATFORM_MAC)
 		else {
+			ccResolutionType resolution;
+			NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:path resolutionType:&resolution];
 
 			NSData *data = [[NSData alloc] initWithContentsOfFile:fullpath];
 			NSBitmapImageRep *image = [[NSBitmapImageRep alloc] initWithData:data];
@@ -328,10 +333,10 @@ static CCTextureCache *sharedTextureCache;
 
 			if( tex ){
 				dispatch_sync(_dictQueue, ^{
-					[_textures setObject: tex forKey:path];
+					[textures_ setObject: tex forKey:path];
 				});
 			}else{
-				CCLOG(@"cocos2d: Couldn't create texture for file:%@ in CCTextureCache", path);
+				CCLOG(@"cocos2d: Couldn't add image:%@ in CCTextureCache", path);
 			}
 
 			// autorelease prevents possible crash in multithreaded environments
@@ -354,7 +359,7 @@ static CCTextureCache *sharedTextureCache;
 	// If key is nil, then create a new texture each time
 	if( key ) {
 		dispatch_sync(_dictQueue, ^{
-			tex = [_textures objectForKey:key];
+			tex = [textures_ objectForKey:key];
 		});
 		if(tex)
 			return tex;
@@ -364,7 +369,7 @@ static CCTextureCache *sharedTextureCache;
 
 	if(tex && key){
 		dispatch_sync(_dictQueue, ^{
-			[_textures setObject: tex forKey:key];
+			[textures_ setObject: tex forKey:key];
 		});
 	}else{
 		CCLOG(@"cocos2d: Couldn't add CGImage in CCTextureCache");
@@ -378,19 +383,19 @@ static CCTextureCache *sharedTextureCache;
 -(void) removeAllTextures
 {
 	dispatch_sync(_dictQueue, ^{
-		[_textures removeAllObjects];
+		[textures_ removeAllObjects];
 	});
 }
 
 -(void) removeUnusedTextures
 {
 	dispatch_sync(_dictQueue, ^{
-		NSArray *keys = [_textures allKeys];
+		NSArray *keys = [textures_ allKeys];
 		for( id key in keys ) {
-			id value = [_textures objectForKey:key];
+			id value = [textures_ objectForKey:key];
 			if( [value retainCount] == 1 ) {
 				CCLOG(@"cocos2d: CCTextureCache: removing unused texture: %@", key);
-				[_textures removeObjectForKey:key];
+				[textures_ removeObjectForKey:key];
 			}
 		}
 	});
@@ -402,10 +407,10 @@ static CCTextureCache *sharedTextureCache;
 		return;
 
 	dispatch_sync(_dictQueue, ^{
-		NSArray *keys = [_textures allKeysForObject:tex];
+		NSArray *keys = [textures_ allKeysForObject:tex];
 
 		for( NSUInteger i = 0; i < [keys count]; i++ )
-			[_textures removeObjectForKey:[keys objectAtIndex:i]];
+			[textures_ removeObjectForKey:[keys objectAtIndex:i]];
 	});
 }
 
@@ -415,7 +420,7 @@ static CCTextureCache *sharedTextureCache;
 		return;
 
 	dispatch_sync(_dictQueue, ^{
-		[_textures removeObjectForKey:name];
+		[textures_ removeObjectForKey:name];
 	});
 }
 
@@ -425,7 +430,7 @@ static CCTextureCache *sharedTextureCache;
 	__block CCTexture2D *tex = nil;
 
 	dispatch_sync(_dictQueue, ^{
-		tex = [_textures objectForKey:key];
+		tex = [textures_ objectForKey:key];
 	});
 
 	return tex;
@@ -440,14 +445,15 @@ static CCTextureCache *sharedTextureCache;
 {
 	NSAssert(path != nil, @"TextureCache: fileimage MUST not be nill");
 
-	// remove possible -HD suffix to prevent caching the same image twice (issue #1040)
-	CCFileUtils *fileUtils = [CCFileUtils sharedFileUtils];
-	path = [fileUtils standarizePath:path];
-
 	__block CCTexture2D * tex;
-	
+
+	// remove possible -HD suffix to prevent caching the same image twice (issue #1040)
+#ifdef __CC_PLATFORM_IOS
+	path = [[CCFileUtils sharedFileUtils] removeSuffixFromFile: path];
+#endif
+
 	dispatch_sync(_dictQueue, ^{
-		tex = [_textures objectForKey:path];
+		tex = [textures_ objectForKey:path];
 	});
 
 	if(tex) {
@@ -457,7 +463,7 @@ static CCTextureCache *sharedTextureCache;
 	tex = [[CCTexture2D alloc] initWithPVRFile: path];
 	if( tex ){
 		dispatch_sync(_dictQueue, ^{
-			[_textures setObject: tex forKey:path];
+			[textures_ setObject: tex forKey:path];
 		});
 	}else{
 		CCLOG(@"cocos2d: Couldn't add PVRImage:%@ in CCTextureCache",path);
@@ -477,8 +483,8 @@ static CCTextureCache *sharedTextureCache;
 	__block NSUInteger totalBytes = 0;
 
 	dispatch_sync(_dictQueue, ^{
-		for (NSString* texKey in _textures) {
-			CCTexture2D* tex = [_textures objectForKey:texKey];
+		for (NSString* texKey in textures_) {
+			CCTexture2D* tex = [textures_ objectForKey:texKey];
 			NSUInteger bpp = [tex bitsPerPixelForFormat];
 			// Each texture takes up width * height * bytesPerPixel bytes.
 			NSUInteger bytes = tex.pixelsWide * tex.pixelsHigh * bpp / 8;

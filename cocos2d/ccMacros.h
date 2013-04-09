@@ -188,10 +188,10 @@ do	{																							\
  */
 #define CC_NODE_DRAW_SETUP()																	\
 do {																							\
-	ccGLEnable( _glServerState );																\
-    NSAssert1(_shaderProgram, @"No shader program set for node: %@", self);						\
-	[_shaderProgram use];																		\
-	[_shaderProgram setUniformsForBuiltins];									\
+	ccGLEnable( glServerState_ );																\
+    NSAssert1(shaderProgram_, @"No shader program set for node: %@", self);						\
+	[shaderProgram_ use];																		\
+	[shaderProgram_ setUniformsForBuiltins];									\
 } while(0)
 
 
@@ -337,7 +337,7 @@ CGSizeMake( (__size_in_points__).width * CC_CONTENT_SCALE_FACTOR(), (__size_in_p
 #define CC_ARC_UNSAFE_RETAINED
 #endif
 
-/** @def CC_INCREMENT_GL_DRAWS
+/** @def CC_INCREMENT_GL_DRAWS_BY_ONE
  Increments the GL Draws counts by one.
  The number of calls per frame are displayed on the screen when the CCDirector's stats are enabled.
  */

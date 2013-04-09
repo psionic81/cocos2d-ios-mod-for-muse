@@ -36,7 +36,7 @@
 	if( (self=[super init]) ) {
 		CGSize s = [[CCDirector sharedDirector] winSize];
 		self.ignoreAnchorPointForPosition = YES;
-		_anchorPoint = ccp(0.5f, 0.5f);
+		anchorPoint_ = ccp(0.5f, 0.5f);
 		[self setContentSize:s];
 	}
 

@@ -28,6 +28,7 @@
 
 
 #import "CCActionManager.h"
+#import "CCScheduler.h"
 #import "ccMacros.h"
 
 @interface CCActionManager (Private)

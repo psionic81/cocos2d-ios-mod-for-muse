@@ -76,9 +76,9 @@
 @interface CCDirectorIOS : CCDirector
 {
 	/* contentScaleFactor could be simulated */
-	BOOL	_isContentScaleSupported;
+	BOOL	isContentScaleSupported_;
 	
-	CCTouchDispatcher	*_touchDispatcher;
+	CCTouchDispatcher	*touchDispatcher_;
 }
 
 // XXX: At least one method is needed for BridgeSupport
@@ -99,8 +99,8 @@
  */
 @interface CCDirectorDisplayLink : CCDirectorIOS
 {
-	CADisplayLink	*_displayLink;
-	CFTimeInterval	_lastDisplayTime;
+	CADisplayLink	*displayLink_;
+	CFTimeInterval	lastDisplayTime_;
 }
 -(void) mainLoop:(id)sender;
 @end

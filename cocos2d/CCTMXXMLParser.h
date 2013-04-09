@@ -78,16 +78,16 @@ typedef enum ccTMXTileFlags_ {
  */
 @interface CCTMXLayerInfo : NSObject
 {
-	NSString			*_name;
-	CGSize				_layerSize;
-	unsigned int		*_tiles;
-	BOOL				_visible;
-	unsigned char		_opacity;
-	BOOL				_ownTiles;
-	unsigned int		_minGID;
-	unsigned int		_maxGID;
-	NSMutableDictionary	*_properties;
-	CGPoint				_offset;
+	NSString			*name_;
+	CGSize				layerSize_;
+	unsigned int		*tiles_;
+	BOOL				visible_;
+	unsigned char		opacity_;
+	BOOL				ownTiles_;
+	unsigned int		minGID_;
+	unsigned int		maxGID_;
+	NSMutableDictionary	*properties_;
+	CGPoint				offset_;
 }
 
 @property (nonatomic,readwrite,retain)	NSString *name;
@@ -114,17 +114,17 @@ typedef enum ccTMXTileFlags_ {
  */
 @interface CCTMXTilesetInfo : NSObject
 {
-	NSString		*_name;
-	unsigned int	_firstGid;
-	CGSize			_tileSize;
-	unsigned int	_spacing;
-	unsigned int	_margin;
+	NSString		*name_;
+	unsigned int	firstGid_;
+	CGSize			tileSize_;
+	unsigned int	spacing_;
+	unsigned int	margin_;
 
 	// filename containing the tiles (should be spritesheet / texture atlas)
-	NSString	*_sourceImage;
+	NSString	*sourceImage_;
 
 	// size in pixels of the image
-	CGSize		_imageSize;
+	CGSize		imageSize_;
 }
 @property (nonatomic,readwrite,retain) NSString *name;
 @property (nonatomic,readwrite,assign) unsigned int firstGid;
@@ -152,42 +152,42 @@ typedef enum ccTMXTileFlags_ {
  */
 @interface CCTMXMapInfo : NSObject <NSXMLParserDelegate>
 {
-	NSMutableString		*_currentString;
-    BOOL				_storingCharacters;
-	int					_layerAttribs;
-	int					_parentElement;
-	unsigned int		_parentGID;
-	unsigned int		_currentFirstGID;
+	NSMutableString	*currentString;
+    BOOL				storingCharacters;
+	int					layerAttribs;
+	int					parentElement;
+	unsigned int		parentGID_;
+
 
 	// tmx filename
-	NSString *_filename;
+	NSString *filename_;
 
 	// tmx resource path
-	NSString *_resources;
+	NSString *resources_;
 
 	// map orientation
-	int		_orientation;
+	int	orientation_;
 
 	// map width & height
-	CGSize	_mapSize;
+	CGSize	mapSize_;
 
 	// tiles width & height
-	CGSize	_tileSize;
+	CGSize	tileSize_;
 
 	// Layers
-	NSMutableArray *_layers;
+	NSMutableArray *layers_;
 
 	// tilesets
-	NSMutableArray *_tilesets;
+	NSMutableArray *tilesets_;
 
 	// ObjectGroups
-	NSMutableArray *_objectGroups;
+	NSMutableArray *objectGroups_;
 
 	// properties
-	NSMutableDictionary *_properties;
+	NSMutableDictionary *properties_;
 
 	// tile properties
-	NSMutableDictionary *_tileProperties;
+	NSMutableDictionary *tileProperties_;
 }
 
 @property (nonatomic,readwrite,assign) int orientation;

@@ -97,18 +97,16 @@ enum {
  */
 @interface CCTexturePVR : NSObject
 {
-	struct CCPVRMipmap	_mipmaps[CC_PVRMIPMAP_MAX];	// pointer to mipmap images
-	NSUInteger	_numberOfMipmaps;					// number of mipmap used
+	struct CCPVRMipmap	mipmaps_[CC_PVRMIPMAP_MAX];	// pointer to mipmap images
+	NSUInteger	numberOfMipmaps_;					// number of mipmap used
 
-	uint32_t _width, _height;
-	GLuint	_name;
-	BOOL	_hasAlpha;
-	BOOL	_hasPremultipliedAlpha;
-	BOOL	_forcePremultipliedAlpha;
+	uint32_t width_, height_;
+	GLuint	name_;
+	BOOL hasAlpha_;
 
 	// cocos2d integration
-	BOOL _retainName;
-	CCTexture2DPixelFormat _format;
+	BOOL retainName_;
+	CCTexture2DPixelFormat format_;
 	
 	const ccPVRTexturePixelFormatInfo *_pixelFormatInfo;
 }
@@ -130,10 +128,6 @@ enum {
 @property (nonatomic,readonly) uint32_t height;
 /** whether or not the texture has alpha */
 @property (nonatomic,readonly) BOOL hasAlpha;
-/** whether or not the texture has premultiplied alpha */
-@property (nonatomic,readonly) BOOL hasPremultipliedAlpha;
-/** whether or not the texture should use hasPremultipliedAlpha instead of global default */
-@property (nonatomic,readonly) BOOL forcePremultipliedAlpha;
 /** how many mipmaps the texture has. 1 means one level (level 0 */
 @property (nonatomic, readonly) NSUInteger numberOfMipmaps;
 

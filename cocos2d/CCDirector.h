@@ -84,74 +84,74 @@ and when to execute the Scenes.
 @interface CCDirector : CC_VIEWCONTROLLER
 {
 	// internal timer
-	NSTimeInterval _animationInterval;
-	NSTimeInterval _oldAnimationInterval;
+	NSTimeInterval animationInterval_;
+	NSTimeInterval oldAnimationInterval_;
 
 	/* stats */
-	BOOL	_displayStats;
+	BOOL	displayStats_;
 
-	NSUInteger _frames;
-	NSUInteger _totalFrames;
-	ccTime _secondsPerFrame;
+	NSUInteger frames_;
+	NSUInteger totalFrames_;
+	ccTime secondsPerFrame_;
 
-	ccTime		_accumDt;
-	ccTime		_frameRate;
-	CCLabelAtlas *_FPSLabel;
-	CCLabelAtlas *_SPFLabel;
-	CCLabelAtlas *_drawsLabel;
+	ccTime		accumDt_;
+	ccTime		frameRate_;
+	CCLabelAtlas *FPSLabel_;
+	CCLabelAtlas *SPFLabel_;
+	CCLabelAtlas *drawsLabel_;
 
 	/* is the running scene paused */
-	BOOL _isPaused;
+	BOOL isPaused_;
     
     /* Is the director running */
-    BOOL _isAnimating;
+    BOOL isAnimating_;
 
 	/* The running scene */
-	CCScene *_runningScene;
+	CCScene *runningScene_;
 
 	/* This object will be visited after the scene. Useful to hook a notification node */
-	id _notificationNode;
+	id notificationNode_;
 
 	/* will be the next 'runningScene' in the next frame
 	 nextScene is a weak reference. */
-	CCScene *_nextScene;
+	CCScene *nextScene_;
 
 	/* If YES, then "old" scene will receive the cleanup message */
-	BOOL	_sendCleanupToScene;
+	BOOL	sendCleanupToScene_;
 
 	/* scheduled scenes */
-	NSMutableArray *_scenesStack;
+	NSMutableArray *scenesStack_;
 
 	/* last time the main loop was updated */
-	struct timeval _lastUpdate;
+	struct timeval lastUpdate_;
 	/* delta time since last tick to main loop */
-	ccTime _dt;
+	ccTime dt;
 	/* whether or not the next delta time will be zero */
-	BOOL _nextDeltaTimeZero;
+	BOOL nextDeltaTimeZero_;
 
 	/* projection used */
-	ccDirectorProjection _projection;
+	ccDirectorProjection projection_;
 
 	/* CCDirector delegate */
-	id<CCDirectorDelegate>	_delegate;
+	id<CCDirectorDelegate>	delegate_;
 
 	/* window size in points */
-	CGSize	_winSizeInPoints;
+	CGSize	winSizeInPoints_;
 
 	/* window size in pixels */
-	CGSize	_winSizeInPixels;
+	CGSize	winSizeInPixels_;
 
 	/* the cocos2d running thread */
-	NSThread	*_runningThread;
+	NSThread	*runningThread_;
 
 	/* scheduler associated with this director */
-	CCScheduler *_scheduler;
+	CCScheduler *scheduler_;
 
 	/* action manager associated with this director */
-	CCActionManager *_actionManager;
+	CCActionManager *actionManager_;
 	
 	/*  OpenGLView. On iOS it is a copy of self.view */
-	CCGLView		*__view;
+	CCGLView		*view_;
 }
 
 /** returns the cocos2d thread.
@@ -225,9 +225,6 @@ and when to execute the Scenes.
 
 /** changes the projection size */
 -(void) reshapeProjection:(CGSize)newWindowSize;
-
-/** Sets the glViewport*/
--(void) setViewport;
 
 /** converts a UIKit coordinate to an OpenGL coordinate
  Useful to convert (multi) touch coordinates to the current layout (portrait or landscape)

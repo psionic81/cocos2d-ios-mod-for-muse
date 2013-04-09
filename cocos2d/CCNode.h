@@ -103,80 +103,81 @@ enum {
 @interface CCNode : NSObject
 {
 	// rotation angle
-	float _rotationX, _rotationY;
+	float rotationX_, rotationY_;
 
 	// scaling factors
-	float _scaleX, _scaleY;
+	float scaleX_, scaleY_;
 
 	// openGL real Z vertex
-	float _vertexZ;
+	float vertexZ_;
 
 	// position of the node
-	CGPoint _position;
+	CGPoint position_;
 
 	// skew angles
-	float _skewX, _skewY;
+	float skewX_, skewY_;
 
 	// anchor point in points
-	CGPoint _anchorPointInPoints;
+	CGPoint anchorPointInPoints_;
 	// anchor point normalized (NOT in points)
-	CGPoint _anchorPoint;
+	CGPoint anchorPoint_;
 
 	// untransformed size of the node
-	CGSize	_contentSize;
+	CGSize	contentSize_;
 
 	// transform
-	CGAffineTransform _transform, _inverse;
-	BOOL _isTransformDirty;
-	BOOL _isInverseDirty;
+	CGAffineTransform transform_, inverse_;
 
 	// a Camera
-	CCCamera *_camera;
+	CCCamera *camera_;
 
 	// a Grid
-	CCGridBase *_grid;
+	CCGridBase *grid_;
 
 	// z-order value
-	NSInteger _zOrder;
+	NSInteger zOrder_;
 
 	// array of children
-	CCArray *_children;
+	CCArray *children_;
 
 	// weak ref to parent
-	CCNode *_parent;
+	CCNode *parent_;
 
 	// a tag. any number you want to assign to the node
-	NSInteger _tag;
+	NSInteger tag_;
 
 	// user data field
-	void *_userData;
-	id _userObject;
+	void *userData_;
+	id userObject_;
 
 	// Shader
-	CCGLProgram	*_shaderProgram;
+	CCGLProgram	*shaderProgram_;
 
 	// Server side state
-	ccGLServerState _glServerState;
+	ccGLServerState glServerState_;
 
 	// used to preserve sequence while sorting children with the same zOrder
-	NSUInteger _orderOfArrival;
+	NSUInteger orderOfArrival_;
 
 	// scheduler used to schedule timers and updates
-	CCScheduler		*_scheduler;
+	CCScheduler		*scheduler_;
 
 	// ActionManager used to handle all the actions
-	CCActionManager	*_actionManager;
+	CCActionManager	*actionManager_;
 
 	// Is running
-	BOOL _isRunning;
+	BOOL isRunning_;
+
+	BOOL isTransformDirty_;
+	BOOL isInverseDirty_;
 
 	// is visible
-	BOOL _visible;
+	BOOL visible_;
 	// If YES, the Anchor Point will be (0,0) when you position the CCNode.
 	// Used by CCLayer and CCScene
-	BOOL _ignoreAnchorPointForPosition;
+	BOOL ignoreAnchorPointForPosition_;
 
-	BOOL _isReorderChildDirty;
+	BOOL isReorderChildDirty_;	
 }
 
 /** The z order of the node relative to its "siblings": children of the same parent */
@@ -294,6 +295,7 @@ enum {
 +(id) node;
 /** initializes the node */
 -(id) init;
+
 
 // scene management
 
@@ -592,28 +594,4 @@ enum {
  */
 - (CGPoint)convertTouchToNodeSpaceAR:(UITouch *)touch;
 #endif // __CC_PLATFORM_IOS
-@end
-
-
-#pragma mark - CCNodeRGBA
-
-/** CCNodeRGBA is a subclass of CCNode that implements the CCRGBAProtocol protocol.
-
- All features from CCNode are valid, plus the following new features:
- - opacity
- - RGB colors
-
- Opacity/Color propagates into children that conform to the CCRGBAProtocol if cascadeOpacity/cascadeColor is enabled.
- @since v2.1
- */
-@interface CCNodeRGBA : CCNode <CCRGBAProtocol>
-{
-	GLubyte		_displayedOpacity, _realOpacity;
-	ccColor3B	_displayedColor, _realColor;
-	BOOL		_cascadeColorEnabled, _cascadeOpacityEnabled;
-}
-
-// XXX To make BridgeSupport happy
--(GLubyte) opacity;
-
 @end

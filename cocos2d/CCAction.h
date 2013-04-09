@@ -39,9 +39,9 @@ enum {
  */
 @interface CCAction : NSObject <NSCopying>
 {
-	id			_originalTarget;
-	id			_target;
-	NSInteger	_tag;
+	id			originalTarget_;
+	id			target_;
+	NSInteger	tag_;
 }
 
 /** The "target". The action will modify the target properties.
@@ -96,7 +96,7 @@ enum {
 @interface CCFiniteTimeAction : CCAction <NSCopying>
 {
 	//! duration in seconds
-	ccTime _duration;
+	ccTime duration_;
 }
 //! duration in seconds of the action
 @property (nonatomic,readwrite) ccTime duration;
@@ -113,7 +113,7 @@ enum {
  */
 @interface CCRepeatForever : CCAction <NSCopying>
 {
-	CCActionInterval *_innerAction;
+	CCActionInterval *innerAction_;
 }
 /** Inner action */
 @property (nonatomic, readwrite, retain) CCActionInterval *innerAction;
@@ -131,18 +131,18 @@ enum {
  */
 @interface CCSpeed : CCAction <NSCopying>
 {
-	CCActionInterval	*_innerAction;
-	CGFloat _speed;
+	CCActionInterval	*innerAction_;
+	float speed_;
 }
 /** alter the speed of the inner function in runtime */
-@property (nonatomic,readwrite) CGFloat speed;
+@property (nonatomic,readwrite) float speed;
 /** Inner action of CCSpeed */
 @property (nonatomic, readwrite, retain) CCActionInterval *innerAction;
 
 /** creates the action */
-+(id) actionWithAction: (CCActionInterval*) action speed:(CGFloat)value;
++(id) actionWithAction: (CCActionInterval*) action speed:(float)value;
 /** initializes the action */
--(id) initWithAction: (CCActionInterval*) action speed:(CGFloat)value;
+-(id) initWithAction: (CCActionInterval*) action speed:(float)value;
 @end
 
 @class CCNode;
@@ -157,23 +157,23 @@ enum {
 @interface CCFollow : CCAction <NSCopying>
 {
 	/* node to follow */
-	CCNode	*_followedNode;
+	CCNode	*followedNode_;
 
 	/* whether camera should be limited to certain area */
-	BOOL _boundarySet;
+	BOOL boundarySet;
 
 	/* if screen-size is bigger than the boundary - update not needed */
-	BOOL _boundaryFullyCovered;
+	BOOL boundaryFullyCovered;
 
 	/* fast access to the screen dimensions */
-	CGPoint _halfScreenSize;
-	CGPoint _fullScreenSize;
+	CGPoint halfScreenSize;
+	CGPoint fullScreenSize;
 
 	/* world boundaries */
-	float _leftBoundary;
-	float _rightBoundary;
-	float _topBoundary;
-	float _bottomBoundary;
+	float leftBoundary;
+	float rightBoundary;
+	float topBoundary;
+	float bottomBoundary;
 }
 
 /** alter behavior - turn on/off boundary */

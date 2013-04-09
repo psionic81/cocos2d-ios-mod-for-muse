@@ -42,7 +42,7 @@
 
 @implementation CCGLView
 
-@synthesize eventDelegate = _eventDelegate;
+@synthesize eventDelegate = eventDelegate_;
 
 +(void) load_
 {
@@ -84,7 +84,7 @@
 			[self setOpenGLContext:context];
 
 		// event delegate
-		_eventDelegate = nil;
+		eventDelegate_ = nil;
 	}
 
 	return self;
@@ -168,7 +168,7 @@
 }
 
 #define DISPATCH_EVENT(__event__, __selector__)												\
-	id obj = _eventDelegate;																\
+	id obj = eventDelegate_;																\
 	CCEventObject *event = [[CCEventObject alloc] init];									\
 	event->event = [__event__ retain];														\
 	event->selector = __selector__;															\

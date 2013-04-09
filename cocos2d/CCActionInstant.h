@@ -67,7 +67,7 @@
  */
 @interface CCFlipX : CCActionInstant
 {
-	BOOL	_flipX;
+	BOOL	flipX;
 }
 +(id) actionWithFlipX:(BOOL)x;
 -(id) initWithFlipX:(BOOL)x;
@@ -78,7 +78,7 @@
  */
 @interface CCFlipY : CCActionInstant
 {
-	BOOL	_flipY;
+	BOOL	flipY;
 }
 +(id) actionWithFlipY:(BOOL)y;
 -(id) initWithFlipY:(BOOL)y;
@@ -88,7 +88,7 @@
  */
 @interface CCPlace : CCActionInstant <NSCopying>
 {
-	CGPoint _position;
+	CGPoint position;
 }
 /** creates a Place action with a position */
 +(id) actionWithPosition: (CGPoint) pos;
@@ -100,8 +100,8 @@
  */
 @interface CCCallFunc : CCActionInstant <NSCopying>
 {
-	id _targetCallback;
-	SEL _selector;
+	id targetCallback_;
+	SEL selector_;
 }
 
 /** Target that will be called */
@@ -131,8 +131,8 @@ typedef void (*CC_CALLBACK_ND)(id, SEL, id, void *);
  */
 @interface CCCallFuncND : CCCallFuncN
 {
-	void			*_data;
-	CC_CALLBACK_ND	_callbackMethod;
+	void			*data_;
+	CC_CALLBACK_ND	callbackMethod_;
 }
 
 /** Invocation object that has the target#selector and the parameters */
@@ -150,7 +150,7 @@ typedef void (*CC_CALLBACK_ND)(id, SEL, id, void *);
  */
 @interface CCCallFuncO : CCCallFunc
 {
-	id	_object;
+	id	object_;
 }
 /** object to be passed as argument */
 @property (nonatomic, readwrite, retain) id object;
@@ -168,7 +168,7 @@ typedef void (*CC_CALLBACK_ND)(id, SEL, id, void *);
  */
 @interface CCCallBlock : CCActionInstant<NSCopying>
 {
-	void (^_block)();
+	void (^block_)();
 }
 
 /** creates the action with the specified block, to be used as a callback.
@@ -191,7 +191,7 @@ typedef void (*CC_CALLBACK_ND)(id, SEL, id, void *);
  */
 @interface CCCallBlockN : CCActionInstant<NSCopying>
 {
-	void (^_block)(CCNode *);
+	void (^block_)(CCNode *);
 }
 
 /** creates the action with the specified block, to be used as a callback.
@@ -213,8 +213,8 @@ typedef void (*CC_CALLBACK_ND)(id, SEL, id, void *);
  */
 @interface CCCallBlockO : CCActionInstant<NSCopying>
 {
-	void (^_block)(id object);
-	id _object;
+	void (^block_)(id object);
+	id object_;
 }
 
 /** object to be passed to the block */

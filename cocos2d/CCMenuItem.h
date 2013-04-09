@@ -38,29 +38,19 @@
  *
  *  Subclass CCMenuItem (or any subclass) to create your custom CCMenuItem objects.
  */
-@interface CCMenuItem : CCNodeRGBA
+@interface CCMenuItem : CCNode
 {
 	// used for menu items using a block
-	void (^_block)(id sender);
+	void (^block_)(id sender);
 
-	BOOL _isEnabled;
-	BOOL _isSelected;
-	
-	BOOL _releaseBlockAtCleanup;
+	BOOL isEnabled_;
+	BOOL isSelected_;
 }
 
 /** returns whether or not the item is selected
 @since v0.8.2
 */
 @property (nonatomic,readonly) BOOL isSelected;
-
-/** If enabled, it releases the block at cleanup time.
- @since v2.1
- */
-@property (nonatomic) BOOL releaseBlockAtCleanup;
-
-/** the active area (relative to the current position) */
-@property (nonatomic,assign) CGRect activeArea;
 
 /** Creates a CCMenuItem with a target/selector.
  target/selector will be implemented using blocks.
@@ -80,6 +70,9 @@
  The block will be "copied".
 */
 -(id) initWithBlock:(void(^)(id sender))block;
+
+/** Returns the outside box in points */
+-(CGRect) rect;
 
 /** Activate the item */
 -(void) activate;
@@ -122,12 +115,12 @@
    - CCLabelAtlas
    - CCLabelTTF
  */
-@interface CCMenuItemLabel : CCMenuItem
+@interface CCMenuItemLabel : CCMenuItem  <CCRGBAProtocol>
 {
-	CCNode<CCLabelProtocol, CCRGBAProtocol> *_label;
-	ccColor3B	_colorBackup;
-	ccColor3B	_disabledColor;
-	float		_originalScale;
+	CCNode<CCLabelProtocol, CCRGBAProtocol> *label_;
+	ccColor3B	colorBackup;
+	ccColor3B	disabledColor_;
+	float		originalScale_;
 }
 
 /** the color that will be used to disable the item */
@@ -213,8 +206,8 @@
  */
 @interface CCMenuItemFont : CCMenuItemLabel
 {
-	NSUInteger _fontSize;
-	NSString *_fontName;
+	NSUInteger fontSize_;
+	NSString *fontName_;
 }
 /** set default font size */
 +(void) setFontSize: (NSUInteger) s;
@@ -278,7 +271,7 @@
  */
 @interface CCMenuItemSprite : CCMenuItem <CCRGBAProtocol>
 {
-	CCNode<CCRGBAProtocol> *_normalImage, *_selectedImage, *_disabledImage;
+	CCNode<CCRGBAProtocol> *normalImage_, *selectedImage_, *disabledImage_;
 }
 
 // weak references
@@ -393,10 +386,17 @@
  */
 @interface CCMenuItemToggle : CCMenuItem <CCRGBAProtocol>
 {
-	NSUInteger	_selectedIndex;
-	NSMutableArray* _subItems;
-    CCMenuItem*	_currentItem;
+	NSUInteger selectedIndex_;
+	NSMutableArray* subItems_;
+	GLubyte		opacity_;
+	ccColor3B	color_;
+    CCMenuItem* currentItem_;
 }
+
+/** conforms with CCRGBAProtocol protocol */
+@property (nonatomic,readonly) GLubyte opacity;
+/** conforms with CCRGBAProtocol protocol */
+@property (nonatomic,readonly) ccColor3B color;
 
 /** returns the selected item */
 @property (nonatomic,readwrite) NSUInteger selectedIndex;

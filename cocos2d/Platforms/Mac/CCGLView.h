@@ -77,7 +77,7 @@
  Only available for Mac OS X
  */
 @interface CCGLView : NSOpenGLView {
-	id<CCEventDelegate> _eventDelegate;
+	id<CCEventDelegate> eventDelegate_;
 }
 
 /** Event delegate */
